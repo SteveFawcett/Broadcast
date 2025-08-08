@@ -154,14 +154,9 @@ namespace Broadcast
             {
                 types = assembly.GetTypes();
             }
-            catch (ReflectionTypeLoadException ex)
+            catch (ReflectionTypeLoadException)
             {
                 Debug.WriteLine($"Partial type load from {assembly.FullName}:");
-
-                foreach (var loaderEx in ex.LoaderExceptions)
-                {
-                    Debug.WriteLine($"  - {loaderEx.Message}");
-                }
             }
             foreach ( Type type in types)
             {
