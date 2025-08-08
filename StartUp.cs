@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using PluginBase;
 using System.Diagnostics;
+using System.IO.Compression;
 using System.Reflection;
 
 namespace Broadcast
@@ -48,40 +49,36 @@ namespace Broadcast
             this.ShowDialog(Configuration);
         }
 
-        static Assembly LoadPlugin(string relativePath, TextBox tb)
+        static void SetupAssemblyResolver(List<Assembly> loadedAssemblies)
         {
-            try
+            AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
             {
-                PluginLoadContext loadContext = new( relativePath );
-                Assembly assembly = loadContext.LoadFromAssemblyName(AssemblyName.GetAssemblyName( relativePath ));
-                Debug.WriteLine($"Loaded {assembly.FullName}");
-                return assembly;
-            }
-            catch (Exception ex)
-            {
-                tb.AppendLine($"Error loading plugin {relativePath}: {ex.Message}");
-                return null!;
-            }
+                var requestedName = new AssemblyName(args.Name).Name;
+
+                var match = loadedAssemblies.FirstOrDefault(a =>
+                    string.Equals(a.GetName().Name, requestedName, StringComparison.OrdinalIgnoreCase));
+
+                return match;
+            };
         }
         static public IEnumerable<IPlugin> ReadDLLs( IConfigurationRoot Configuration, TextBox tb)
         {
             List<IPlugin> commands = [];
     
             string directory = Configuration["plugindirectory"] ?? AppDomain.CurrentDomain.BaseDirectory;
-            
-            foreach (IConfigurationSection relativePath in   Configuration.GetSection("plugins").GetChildren() )
+
+            Debug.WriteLine($"Using plugin directory: {directory}");
+
+            foreach (string zipPath in Directory.GetFiles(directory, "*.zip") )
             {
-                if (relativePath.Value is null || relativePath.Value.Length == 0)
-                {
-                    tb.AppendLine($"Skipping empty plugin path in configuration.");
-                    continue;
-                }
+                Debug.WriteLine($"Looking for plugin zip at {zipPath}");
 
-                string dll = Path.Combine( directory , relativePath.Value ) + ".dll";
-                tb.AppendLine($"Loading plugin from {dll}");
+                var dllBytesList = ExtractDllsFromZip(zipPath);
+                var loadedAssemblies = LoadAssembliesFromBytes(dllBytesList);
+                SetupAssemblyResolver(loadedAssemblies);
 
-                Assembly assembly = LoadPlugin( dll, tb);
-                if (assembly != null)
+
+                foreach (var assembly in loadedAssemblies)
                 {
                     commands.AddRange(CreateCommands(assembly, tb ));
                 }
@@ -113,6 +110,41 @@ namespace Broadcast
         }
 
 
+    static List<byte[]> ExtractDllsFromZip(string zipPath)
+    {
+        var dllBytesList = new List<byte[]>();
+
+        using (var archive = ZipFile.OpenRead(zipPath))
+        {
+            foreach (var entry in archive.Entries)
+            {
+                if (entry.FullName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+                {
+                    using (var stream = entry.Open())
+                    using (var ms = new MemoryStream())
+                    {
+                        stream.CopyTo(ms);
+                        dllBytesList.Add(ms.ToArray());
+                    }
+                }
+            }
+        }
+
+        return dllBytesList;
+    }
+
+        static List<Assembly> LoadAssembliesFromBytes(List<byte[]> dllBytesList)
+        {
+            var assemblies = new List<Assembly>();
+
+            foreach (var dllBytes in dllBytesList)
+            {
+                var assembly = Assembly.Load(dllBytes);
+                assemblies.Add(assembly);
+            }
+
+            return assemblies;
+        }
         static List<IPlugin> CreateCommands(Assembly assembly, TextBox tb)
         {
             List<IPlugin> commands = [];
@@ -121,18 +153,18 @@ namespace Broadcast
             try
             {
                 types = assembly.GetTypes();
-                Debug.WriteLine($"{assembly.FullName} contains {types.Length} types.");
             }
             catch (ReflectionTypeLoadException ex)
             {
-                tb.AppendLine($"Error loading types from assembly {assembly.FullName}: {ex.Message}");
-                return commands;
-            }
+                Debug.WriteLine($"Partial type load from {assembly.FullName}:");
 
+                foreach (var loaderEx in ex.LoaderExceptions)
+                {
+                    Debug.WriteLine($"  - {loaderEx.Message}");
+                }
+            }
             foreach ( Type type in types)
             {
-                Debug.WriteLine($"Checking {type.FullName}");
-
                 if (typeof(IPlugin).IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract)
                 {
                     tb.AppendLine($"Found type: {type.FullName} which implements IPlugin");
