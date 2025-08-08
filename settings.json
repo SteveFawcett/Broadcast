@@ -1,0 +1,16 @@
+﻿{
+  "plugins": [ "APIPlugin", "MSFSPlugin", "RedisPlugin" ],
+  "MSFS": {
+    "server": "localhost",
+    "export": "PLANE ALTITUDE  , PLANE LATITUDE, PLANE LONGITUDE"
+  }, 
+  "Redis": {
+    "server": "controller.local",
+    "port": 6379,
+    "sample": 9999
+  },
+  "API": {
+    "port": 8080,
+    "server": "0.0.0.0"
+  }
+}
