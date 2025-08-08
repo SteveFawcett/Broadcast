@@ -52,8 +52,10 @@ namespace Broadcast
         {
             try
             {
-                PluginLoadContext loadContext = new(relativePath);
-                return loadContext.LoadFromAssemblyName(AssemblyName.GetAssemblyName(relativePath));
+                PluginLoadContext loadContext = new( relativePath );
+                Assembly assembly = loadContext.LoadFromAssemblyName(AssemblyName.GetAssemblyName( relativePath ));
+                Debug.WriteLine($"Loaded {assembly.FullName}");
+                return assembly;
             }
             catch (Exception ex)
             {
@@ -65,9 +67,20 @@ namespace Broadcast
         {
             List<IPlugin> commands = [];
     
-            foreach (IConfigurationSection relativePath in Configuration.GetSection("plugins").GetChildren() )
+            string directory = Configuration["plugindirectory"] ?? AppDomain.CurrentDomain.BaseDirectory;
+            
+            foreach (IConfigurationSection relativePath in   Configuration.GetSection("plugins").GetChildren() )
             {
-                Assembly assembly = LoadPlugin( relativePath.Value + ".dll", tb);
+                if (relativePath.Value is null || relativePath.Value.Length == 0)
+                {
+                    tb.AppendLine($"Skipping empty plugin path in configuration.");
+                    continue;
+                }
+
+                string dll = Path.Combine( directory , relativePath.Value ) + ".dll";
+                tb.AppendLine($"Loading plugin from {dll}");
+
+                Assembly assembly = LoadPlugin( dll, tb);
                 if (assembly != null)
                 {
                     commands.AddRange(CreateCommands(assembly, tb ));
@@ -108,6 +121,7 @@ namespace Broadcast
             try
             {
                 types = assembly.GetTypes();
+                Debug.WriteLine($"{assembly.FullName} contains {types.Length} types.");
             }
             catch (ReflectionTypeLoadException ex)
             {
@@ -117,6 +131,7 @@ namespace Broadcast
 
             foreach ( Type type in types)
             {
+                Debug.WriteLine($"Checking {type.FullName}");
 
                 if (typeof(IPlugin).IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract)
                 {

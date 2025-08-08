@@ -34,15 +34,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\APIPlugin\APIPlugin.csproj" />
-    <ProjectReference Include="..\MSFSPlugin\MSFSPlugin.csproj">
-      <TreatAsUsed>true</TreatAsUsed>
-    </ProjectReference>
-    <ProjectReference Include="..\PluginBase\PluginBase.csproj" />
-    <ProjectReference Include="..\RedisPlugin\RedisPlugin.csproj">
-      <TreatAsUsed>true</TreatAsUsed>
-    </ProjectReference>
+    <ProjectReference Include="..\BroadcastPluginSDK\PluginBase.csproj" />
   </ItemGroup>
+
 
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
