@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using PluginBase;
+using System.CodeDom;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Reflection;
@@ -25,6 +26,27 @@ namespace Broadcast
             this.Hide();
         }
 
+        public IEnumerable<ICache> Caches()
+        {
+            foreach (IPlugin plugin in plugins)
+            {
+                if( plugin is ICache c )
+                {
+                    yield return c;
+                }
+            }
+        }
+        public IEnumerable<IProvider> Providers()
+        {
+            foreach (IPlugin plugin in plugins)
+            {
+                if (plugin is IProvider c)
+                {
+                    yield return c;
+                }
+            }
+        }
+
         public void AttachTo(Form parent)
         {
             if (parent is MainForm mainForm)
@@ -38,6 +60,19 @@ namespace Broadcast
                         plugin.Click += mainForm.PluginControl_Click;
                         plugin.MouseHover += mainForm.PluginControl_Hover;
                         plugin.Start();
+
+                        if (plugin is IProvider provider)
+                        {
+                            Debug.WriteLine($"[1] Plugin {plugin.Name} implements {typeof(IProvider).Name}");
+                            provider.DataReceived += mainForm.PluginControl_DataReceived;
+                        }
+
+                        if (plugin is ICache cache)
+                        {
+                            Debug.WriteLine($"[2] Plugin {plugin.Name} implements {typeof(ICache).Name}");
+                            //TODO: Implement code to write to cache when data is received
+                        }
+          
                     }
                 }
             }
@@ -76,7 +111,6 @@ namespace Broadcast
                 var dllBytesList = ExtractDllsFromZip(zipPath);
                 var loadedAssemblies = LoadAssembliesFromBytes(dllBytesList);
                 SetupAssemblyResolver(loadedAssemblies);
-
 
                 foreach (var assembly in loadedAssemblies)
                 {

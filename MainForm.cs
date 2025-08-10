@@ -7,20 +7,17 @@ namespace Broadcast
 {
     public partial class MainForm : Form
     {
+        StartUp Plugins ;
+
         public MainForm(IConfigurationRoot Configuration , StartUp plugins )
         {
+            Plugins = plugins;
             InitializeComponent();
             toolStripStatusLabel.Text = "Plugins Starting";
-            plugins.AttachTo(this);
+            Plugins.AttachTo(this);
             toolStripStatusLabel.Text = "System Started";
         }
-        public void PluginControl_DataReceived(object? sender, PluginEventArgs e)
-        {
-            if (sender is IPlugin c)
-            {
-               //if( e.Icon is not null ) c.Icon = e.Icon;
-            }
-        }
+
         public void PluginControl_Click(object? sender, EventArgs e)
         {
             Debug.WriteLine($"PluginControl_Click {sender?.GetType().Name}");
@@ -37,6 +34,14 @@ namespace Broadcast
             if(sender is IPlugin c)
             {
                 toolStripStatusLabel.Text = $"{c.Name} ({c.Version}) : {c.Description}";
+            }
+        }
+
+        internal void PluginControl_DataReceived(object? sender, PluginData e)
+        {
+            foreach (ICache plugin in Plugins.Caches())
+            {
+                plugin.Write(e);
             }
         }
     }
