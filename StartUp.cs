@@ -1,6 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
-using PluginBase;
-using System.CodeDom;
+﻿using BroadcastPluginSDK;
+using Microsoft.Extensions.Configuration;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Reflection;

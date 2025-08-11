@@ -8,7 +8,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Broadcast", "Broadcast.cspr
 		{53015D67-7123-D632-04C0-9408FFB50CC2} = {53015D67-7123-D632-04C0-9408FFB50CC2}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PluginBase", "..\BroadcastPluginSDK\PluginBase.csproj", "{53015D67-7123-D632-04C0-9408FFB50CC2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BroadcastPluginSDK", "..\BroadcastPluginSDK\BroadcastPluginSDK.csproj", "{53015D67-7123-D632-04C0-9408FFB50CC2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APIPlugin", "..\APIPlugin\APIPlugin.csproj", "{07BDDEF3-2B89-893C-CEF1-82F1D876C103}"
 EndProject
