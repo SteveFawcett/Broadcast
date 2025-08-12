@@ -32,6 +32,7 @@
   <ItemGroup>
     <PackageReference Include="BroadcastPluginSDK" Version="1.0.4" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.8" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
 

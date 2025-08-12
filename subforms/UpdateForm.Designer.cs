@@ -28,31 +28,46 @@
         /// </summary>
         private void InitializeComponent()
         {
-            listView1 = new ListView();
+            dataGridView1 = new DataGridView();
+            button1 = new Button();
+            ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             SuspendLayout();
             // 
-            // listView1
+            // dataGridView1
             // 
-            listView1.Location = new Point(12, 10);
-            listView1.Name = "listView1";
-            listView1.Size = new Size(780, 373);
-            listView1.TabIndex = 0;
-            listView1.UseCompatibleStateImageBehavior = false;
-            listView1.View = View.Details;
+            dataGridView1.BackgroundColor = SystemColors.Control;
+            dataGridView1.BorderStyle = BorderStyle.None;
+            dataGridView1.Location = new Point(12, 10);
+            dataGridView1.Name = "dataGridView1";
+            dataGridView1.Size = new Size(780, 373);
+            dataGridView1.TabIndex = 0;
+            // 
+            // button1
+            // 
+            button1.Location = new Point(713, 404);
+            button1.Name = "button1";
+            button1.Size = new Size(75, 23);
+            button1.TabIndex = 2;
+            button1.Text = "Close";
+            button1.UseVisualStyleBackColor = true;
+            button1.MouseClick += CloseForm;
             // 
             // UpdateForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Controls.Add(listView1);
+            Controls.Add(button1);
+            Controls.Add(dataGridView1);
             Name = "UpdateForm";
             Text = "Update";
+            ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
             ResumeLayout(false);
         }
 
         #endregion
 
-        private ListView listView1;
+        private DataGridView dataGridView1;
+        private Button button1;
     }
 }
