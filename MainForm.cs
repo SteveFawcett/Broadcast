@@ -6,9 +6,9 @@ namespace Broadcast
 {
     public partial class MainForm : Form
     {
-        StartUp Plugins ;
+        StartUp Plugins;
 
-        public MainForm(IConfigurationRoot Configuration , StartUp plugins )
+        public MainForm(IConfigurationRoot Configuration, StartUp plugins)
         {
             Plugins = plugins;
             InitializeComponent();
@@ -30,7 +30,7 @@ namespace Broadcast
 
         internal void PluginControl_Hover(object? sender, EventArgs e)
         {
-            if(sender is IPlugin c)
+            if (sender is IPlugin c)
             {
                 toolStripStatusLabel.Text = $"{c.Name} ({c.Version}) : {c.Description}";
             }
@@ -42,6 +42,13 @@ namespace Broadcast
             {
                 plugin.Write(e);
             }
+        }
+
+        private void checkForUpdatesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Debug.WriteLine("Checking for updates...");
+            subforms.UpdateForm updateForm = new subforms.UpdateForm(Plugins.All());
+            updateForm.ShowDialog(this);
         }
     }
 }

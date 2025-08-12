@@ -12,7 +12,6 @@ namespace Broadcast
         private void ShowDialog(IConfigurationRoot Configuration)
         {
             version.Text = $"Version: {Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown"}";
-
             this.Show();
             this.Refresh();
             
@@ -43,6 +42,23 @@ namespace Broadcast
                 {
                     yield return c;
                 }
+            }
+        }
+
+        public IEnumerable<Dictionary<string,string>> All()
+        {
+            foreach (IPlugin plugin in plugins)
+            {
+                Dictionary<string, string> c = new()
+                {
+                    { "Name"          , plugin.Name },
+                    { "Version"       , plugin.Version },
+                    { "FilePath"      , plugin.FilePath },
+                    { "Description"   , plugin.Description },
+                    { "RepositoryUrl" , plugin.RepositoryUrl }
+                };
+
+                yield return c;
             }
         }
 
@@ -113,7 +129,7 @@ namespace Broadcast
 
                 foreach (var assembly in loadedAssemblies)
                 {
-                    commands.AddRange(CreateCommands(assembly, tb ));
+                    commands.AddRange(CreateCommands(assembly, tb , zipPath ));
                 }
             }
 
@@ -178,7 +194,7 @@ namespace Broadcast
 
             return assemblies;
         }
-        static List<IPlugin> CreateCommands(Assembly assembly, TextBox tb)
+        static List<IPlugin> CreateCommands(Assembly assembly, TextBox tb , string filePath)
         {
             List<IPlugin> commands = [];
             Type[] types = [];
@@ -196,10 +212,11 @@ namespace Broadcast
                 if (typeof(IPlugin).IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract)
                 {
                     tb.AppendLine($"Found type: {type.FullName} which implements IPlugin");
-
+ 
                     // Ensure the instance is not null and handle potential nullability issues
                     if (Activator.CreateInstance(type) is IPlugin instance)
                     {
+                        instance.FilePath = filePath;
                         commands.Add(instance);
                         break;
                     }

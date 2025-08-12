@@ -33,14 +33,18 @@
             statusStrip = new StatusStrip();
             toolStripStatusLabel = new ToolStripStatusLabel();
             panel = new Panel();
+            menuStrip1 = new MenuStrip();
+            toolStripMenuItem1 = new ToolStripMenuItem();
+            checkForUpdatesToolStripMenuItem = new ToolStripMenuItem();
             statusStrip.SuspendLayout();
+            menuStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // flowLayoutPanel1
             // 
-            flowLayoutPanel1.Location = new Point(7, 8);
+            flowLayoutPanel1.Location = new Point(7, 27);
             flowLayoutPanel1.Name = "flowLayoutPanel1";
-            flowLayoutPanel1.Size = new Size(111, 452);
+            flowLayoutPanel1.Size = new Size(111, 433);
             flowLayoutPanel1.TabIndex = 0;
             // 
             // statusStrip
@@ -62,10 +66,33 @@
             // 
             // panel
             // 
-            panel.Location = new Point(134, 11);
+            panel.Location = new Point(134, 27);
             panel.Name = "panel";
-            panel.Size = new Size(595, 449);
+            panel.Size = new Size(595, 433);
             panel.TabIndex = 2;
+            // 
+            // menuStrip1
+            // 
+            menuStrip1.Items.AddRange(new ToolStripItem[] { toolStripMenuItem1 });
+            menuStrip1.Location = new Point(0, 0);
+            menuStrip1.Name = "menuStrip1";
+            menuStrip1.Size = new Size(732, 24);
+            menuStrip1.TabIndex = 3;
+            menuStrip1.Text = "menuStrip1";
+            // 
+            // toolStripMenuItem1
+            // 
+            toolStripMenuItem1.DropDownItems.AddRange(new ToolStripItem[] { checkForUpdatesToolStripMenuItem });
+            toolStripMenuItem1.Name = "toolStripMenuItem1";
+            toolStripMenuItem1.Size = new Size(44, 20);
+            toolStripMenuItem1.Text = "Help";
+            // 
+            // checkForUpdatesToolStripMenuItem
+            // 
+            checkForUpdatesToolStripMenuItem.Name = "checkForUpdatesToolStripMenuItem";
+            checkForUpdatesToolStripMenuItem.Size = new Size(171, 22);
+            checkForUpdatesToolStripMenuItem.Text = "Check for Updates";
+            checkForUpdatesToolStripMenuItem.Click += checkForUpdatesToolStripMenuItem_Click;
             // 
             // MainForm
             // 
@@ -74,12 +101,16 @@
             ClientSize = new Size(732, 489);
             Controls.Add(panel);
             Controls.Add(statusStrip);
+            Controls.Add(menuStrip1);
             Controls.Add(flowLayoutPanel1);
             Icon = (Icon)resources.GetObject("$this.Icon");
+            MainMenuStrip = menuStrip1;
             Name = "MainForm";
             Text = "Simulator Broadcast";
             statusStrip.ResumeLayout(false);
             statusStrip.PerformLayout();
+            menuStrip1.ResumeLayout(false);
+            menuStrip1.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -90,5 +121,8 @@
         private StatusStrip statusStrip;
         private ToolStripStatusLabel toolStripStatusLabel;
         private Panel panel;
+        private MenuStrip menuStrip1;
+        private ToolStripMenuItem toolStripMenuItem1;
+        private ToolStripMenuItem checkForUpdatesToolStripMenuItem;
     }
 }
