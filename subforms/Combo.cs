@@ -4,19 +4,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Broadcast.subforms
+namespace Broadcast.SubForms
 {
     internal sealed class Combo : DataGridViewComboBoxCell
     {
-        public Combo(string[] items)
+        public Combo(string?[] items)
         {
             DropDownWidth = 200;
             FlatStyle = FlatStyle.Flat;
-            Items.AddRange(items);
+ 
             ValueType = typeof(string);
 
             if (items?.Length > 0)
+            {
+                Items.AddRange(items);
                 Value = items[0];
+            }
         }
     }
 }

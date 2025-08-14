@@ -4,29 +4,57 @@ using System.Diagnostics;
 using System.IO.Compression;
 using System.Reflection;
 
-namespace Broadcast
+namespace Broadcast.SubForms
 {
     public partial class StartUp : Form
     {
-        private IEnumerable<IPlugin> plugins = [];
-        private void ShowDialog(IConfigurationRoot Configuration)
+        private IEnumerable<IPlugin> _plugins = [];
+        private void ShowDialog(IConfigurationRoot configuration)
         {
-            version.Text = $"Version: {Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "Unknown"}";
-            this.Show();
-            this.Refresh();
+            var text = $"{Strings.version}: {Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? Strings.unknown }";
+            Show();
+            Refresh();
             
             textBox.Clear();
-            textBox.AppendLine($"Starting up Broadcast. Version {version.Text}");
-            if (Configuration is not null)
-            {
-                plugins = ReadDLLs( Configuration, textBox);
-            }
-            this.Hide();
+            textBox.AppendLine(Strings.start);
+            textBox.AppendLine(text);
+
+            _plugins = ReadDLLs( configuration, textBox);
+
+            Hide();
         }
 
-        public IEnumerable<ICache> Caches()
+        public ICache? MasterCache()
         {
-            foreach (IPlugin plugin in plugins)
+            var plugins = Caches();
+            if (plugins == null || !plugins.Any())
+            {
+                Debug.WriteLine($"No plugins of type {nameof(ICache)} have been loaded");
+                return null;
+            }
+
+            var masterCaches = plugins.Where(p => p.Master ).ToList();
+
+            if (masterCaches.Count > 1)
+            {
+                if (masterCaches.First() is IPlugin c)
+                {
+                    Debug.WriteLine(
+                        $"More than one plugin is marked as Master; returning the first. [{c.Name}]");
+                }
+            }
+            else if (masterCaches.Count == 0)
+            {
+                Debug.WriteLine("No plugins are marked as Master.");
+                return null;
+            }
+
+            return masterCaches.First();
+        }
+
+        public IEnumerable<ICache>? Caches()
+        {
+            foreach (IPlugin plugin in _plugins)
             {
                 if( plugin is ICache c )
                 {
@@ -34,9 +62,9 @@ namespace Broadcast
                 }
             }
         }
-        public IEnumerable<IProvider> Providers()
+        public IEnumerable<IProvider>? Providers()
         {
-            foreach (IPlugin plugin in plugins)
+            foreach (IPlugin plugin in _plugins)
             {
                 if (plugin is IProvider c)
                 {
@@ -47,7 +75,7 @@ namespace Broadcast
 
         public IEnumerable<Dictionary<string,string>> All()
         {
-            foreach (IPlugin plugin in plugins)
+            foreach (IPlugin plugin in _plugins)
             {
                 Dictionary<string, string> c = new()
                 {
@@ -66,37 +94,36 @@ namespace Broadcast
         {
             if (parent is MainForm mainForm)
             {
-                foreach (IPlugin plugin in plugins)
-                {  
-                    if (plugin.MainIcon is not null)
+                foreach (IPlugin plugin in _plugins)
+                {
+                    mainForm.flowLayoutPanel1.Controls.Add(plugin.MainIcon);
+                    plugin.Click += mainForm.PluginControl_Click;
+                    plugin.MouseHover += mainForm.PluginControl_Hover;
+                    string res = plugin.Start();
+                    if (!string.IsNullOrWhiteSpace(res))
                     {
-                        textBox.AppendLine($"Adding control {plugin.Name} Version {plugin.Version}. Using configuration {plugin.Stanza}");
-                        mainForm.flowLayoutPanel1.Controls.Add(plugin.MainIcon);
-                        plugin.Click += mainForm.PluginControl_Click;
-                        plugin.MouseHover += mainForm.PluginControl_Hover;
-                        plugin.Start();
-
-                        if (plugin is IProvider provider)
-                        {
-                            Debug.WriteLine($"[1] Plugin {plugin.Name} implements {typeof(IProvider).Name}");
-                            provider.DataReceived += mainForm.PluginControl_DataReceived;
-                        }
-
-                        if (plugin is ICache cache)
-                        {
-                            Debug.WriteLine($"[2] Plugin {plugin.Name} implements {typeof(ICache).Name}");
-                            //TODO: Implement code to write to cache when data is received
-                        }
-          
+                        mainForm.toolStripStatusLabel.Text = res;
                     }
+
+                    if (plugin is IProvider provider)
+                    {
+                        Debug.WriteLine($"[1] Plugin {plugin.Name} implements {nameof(IProvider)}");
+                        provider.DataReceived += mainForm.PluginControl_DataReceived;
+                    }
+
+                    if (plugin is ICache cache)
+                    {
+                        Debug.WriteLine($"[2] Plugin {plugin.Name} implements {nameof(ICache)}");
+                        //TODO: Implement code to write to cache when data is received
+                    }
+                        
                 }
             }
         }
-        public StartUp(IConfigurationRoot Configuration)
+        public StartUp(IConfigurationRoot configuration)
         {
             InitializeComponent();
-            this.Text = String.Format("Broadcast Start up");
-            this.ShowDialog(Configuration);
+            ShowDialog(configuration);
         }
 
         static void SetupAssemblyResolver(List<Assembly> loadedAssemblies)
@@ -111,11 +138,11 @@ namespace Broadcast
                 return match;
             };
         }
-        static public IEnumerable<IPlugin> ReadDLLs( IConfigurationRoot Configuration, TextBox tb)
+        public static IEnumerable<IPlugin> ReadDLLs( IConfigurationRoot configuration, TextBox tb)
         {
             List<IPlugin> commands = [];
     
-            string directory = Configuration["plugindirectory"] ?? AppDomain.CurrentDomain.BaseDirectory;
+            string directory = configuration["plugindirectory"] ?? AppDomain.CurrentDomain.BaseDirectory;
 
             Debug.WriteLine($"Using plugin directory: {directory}");
 
@@ -136,7 +163,7 @@ namespace Broadcast
             foreach (IPlugin command in commands)
             {
                 tb.AppendLine($"Configuring {command.Name} using stanza {command.Stanza}");
-                var section = Configuration.GetSection(command.Stanza);
+                var section = configuration.GetSection(command.Stanza);
                 if (section == null)
                 {
                     tb.AppendLine($"No configuration found for {command.Stanza}. Skipping configuration.");
@@ -145,12 +172,12 @@ namespace Broadcast
 
                 if( command.AttachConfiguration( section ) == false )
                 {
-                    var Dict = new Dictionary<string, string?>();
+                    var dict = new Dictionary<string, string?>();
                     foreach (var child in section.GetChildren())
                     {
-                        Dict[child.Key] = child.Value;
+                        dict[child.Key] = child.Value;
                     }
-                    command.AttachConfiguration(Dict);
+                    command.AttachConfiguration(dict);
                 }
 
             }
@@ -169,12 +196,10 @@ namespace Broadcast
             {
                 if (entry.FullName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
                 {
-                    using (var stream = entry.Open())
-                    using (var ms = new MemoryStream())
-                    {
-                        stream.CopyTo(ms);
-                        dllBytesList.Add(ms.ToArray());
-                    }
+                    using var stream = entry.Open();
+                    using var ms = new MemoryStream();
+                    stream.CopyTo(ms);
+                    dllBytesList.Add(ms.ToArray());
                 }
             }
         }

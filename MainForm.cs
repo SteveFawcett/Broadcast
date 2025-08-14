@@ -2,7 +2,7 @@ using BroadcastPluginSDK;
 using Microsoft.Extensions.Configuration;
 using System.Diagnostics;
 
-namespace Broadcast
+namespace Broadcast.SubForms
 {
     public partial class MainForm : Form
     {
@@ -14,7 +14,7 @@ namespace Broadcast
             InitializeComponent();
             toolStripStatusLabel.Text = "Plugins Starting";
             Plugins.AttachTo(this);
-            toolStripStatusLabel.Text = "System Started";
+            var master= Plugins.MasterCache();
         }
 
         public void PluginControl_Click(object? sender, EventArgs e)
@@ -47,7 +47,7 @@ namespace Broadcast
         private void checkForUpdatesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Debug.WriteLine("Checking for updates...");
-            subforms.UpdateForm updateForm = new subforms.UpdateForm(Plugins.All());
+            UpdateForm updateForm = new UpdateForm(Plugins.All());
             updateForm.ShowDialog(this);
         }
     }

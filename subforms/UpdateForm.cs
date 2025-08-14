@@ -2,7 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 
-namespace Broadcast.subforms
+namespace Broadcast.SubForms
 {
 
     public partial class UpdateForm : Form
@@ -67,15 +67,21 @@ namespace Broadcast.subforms
                     string json = fetcher.GetJsonAsync("releases", TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
                     var jArray = JArray.Parse(json);
 
-                    var tags = jArray
+                    string?[] tags = jArray
                         .Select(entry => entry["tag_name"]?.ToString())
                         .Where(tag => !string.IsNullOrEmpty(tag))
+                        .ToArray();
+                    
+                    string?[] sorted = tags
+                        .Select(tag => new { Original = tag, SemVer = SemVer.Parse(tag ?? String.Empty) })
+                        .OrderByDescending(x => x.SemVer)
+                        .Select(x => x.Original)
                         .ToArray();
 
                     // UI updates must be marshaled to the main thread
                     row.DataGridView?.Invoke(() =>
                     {
-                        row.Cells["Options"] = new Combo(tags);
+                        row.Cells["Options"] = new Combo(sorted );
                         ///onComplete?.Invoke(jArray);
                     });
                 }

@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Broadcast.subforms
+namespace Broadcast.SubForms
 {
     public class JsonFetcher
     {

@@ -10,11 +10,14 @@
     "port": 6379,
     "sample": 9999
   },
+  "Local": {
+    "master": true
+  },
   "API": {
     "port": 8080,
     "server": "0.0.0.0"
   },
-  "TEST": {
+  "Test": {
     "TestData": [
       { "variable": "PLANE ALTITUDE" },
       { "variable": "PLANE LATITUDE" },

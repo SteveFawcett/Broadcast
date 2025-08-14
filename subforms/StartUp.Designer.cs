@@ -1,4 +1,4 @@
-﻿namespace Broadcast
+﻿namespace Broadcast.SubForms
 {
     partial class StartUp
     {
@@ -29,7 +29,6 @@
         {
             pictureBox1 = new PictureBox();
             textBox = new TextBox();
-            version = new Label();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
@@ -45,6 +44,7 @@
             // 
             // textBox
             // 
+            textBox.BorderStyle = BorderStyle.None;
             textBox.Enabled = false;
             textBox.Location = new Point(13, 262);
             textBox.Multiline = true;
@@ -52,21 +52,11 @@
             textBox.Size = new Size(687, 127);
             textBox.TabIndex = 1;
             // 
-            // version
-            // 
-            version.AutoSize = true;
-            version.Location = new Point(536, 16);
-            version.Name = "version";
-            version.Size = new Size(40, 15);
-            version.TabIndex = 2;
-            version.Text = "0.0.0.0";
-            // 
             // StartUp
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(713, 401);
-            Controls.Add(version);
             Controls.Add(textBox);
             Controls.Add(pictureBox1);
             FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -89,6 +79,5 @@
 
         private PictureBox pictureBox1;
         private TextBox textBox;
-        private Label version;
     }
 }

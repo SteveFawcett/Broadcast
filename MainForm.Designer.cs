@@ -1,4 +1,4 @@
-﻿namespace Broadcast
+﻿namespace Broadcast.SubForms
 {
     partial class MainForm
     {
@@ -119,7 +119,7 @@
 
         public FlowLayoutPanel flowLayoutPanel1;
         private StatusStrip statusStrip;
-        private ToolStripStatusLabel toolStripStatusLabel;
+        public ToolStripStatusLabel toolStripStatusLabel;
         private Panel panel;
         private MenuStrip menuStrip1;
         private ToolStripMenuItem toolStripMenuItem1;

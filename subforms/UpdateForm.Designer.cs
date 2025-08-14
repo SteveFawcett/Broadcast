@@ -1,4 +1,4 @@
-﻿namespace Broadcast.subforms
+﻿namespace Broadcast.SubForms
 {
     partial class UpdateForm
     {
