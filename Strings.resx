@@ -120,6 +120,9 @@
   <data name="addingControl" xml:space="preserve">
     <value>Adding control {0} Version {1}. Using configuration {2}</value>
   </data>
+  <data name="PluginStarting" xml:space="preserve">
+    <value>Plugins Starting</value>
+  </data>
   <data name="start" xml:space="preserve">
     <value>Broadcast Start up</value>
   </data>

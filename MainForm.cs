@@ -1,54 +1,55 @@
-using BroadcastPluginSDK;
-using Microsoft.Extensions.Configuration;
 using System.Diagnostics;
+using BroadcastPluginSDK;
 
-namespace Broadcast.SubForms
+namespace Broadcast.SubForms;
+
+public partial class MainForm : Form
 {
-    public partial class MainForm : Form
+    public delegate IEnumerable<KeyValuePair<string, string>> CacheReader(List<string> values);
+
+    private readonly StartUp _plugins;
+
+    public MainForm(StartUp plugins)
     {
-        StartUp Plugins;
+        _plugins = plugins;
+        InitializeComponent();
+        toolStripStatusLabel.Text = Strings.PluginStarting;
 
-        public MainForm(IConfigurationRoot Configuration, StartUp plugins)
-        {
-            Plugins = plugins;
-            InitializeComponent();
-            toolStripStatusLabel.Text = "Plugins Starting";
-            Plugins.AttachTo(this);
-            var master= Plugins.MasterCache();
-        }
+        _plugins.AttachTo(this);
 
-        public void PluginControl_Click(object? sender, EventArgs e)
-        {
-            Debug.WriteLine($"PluginControl_Click {sender?.GetType().Name}");
-            if (sender is IPlugin c)
-            {
-                panel.Controls.Clear();
-                panel.Controls.Add(c.InfoPage ?? new InfoPage());
-                panel.Size = c.InfoPage?.Size ?? new Size(300, 300);
-            }
-        }
+        _plugins.AttachMasterReader();
+    }
 
-        internal void PluginControl_Hover(object? sender, EventArgs e)
+    public void PluginControl_Click(object? sender, EventArgs e)
+    {
+        Debug.WriteLine($"PluginControl_Click {sender?.GetType().Name}");
+        if (sender is IPlugin c)
         {
-            if (sender is IPlugin c)
-            {
-                toolStripStatusLabel.Text = $"{c.Name} ({c.Version}) : {c.Description}";
-            }
-        }
-
-        internal void PluginControl_DataReceived(object? sender, PluginData e)
-        {
-            foreach (ICache plugin in Plugins.Caches())
-            {
-                plugin.Write(e);
-            }
-        }
-
-        private void checkForUpdatesToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Debug.WriteLine("Checking for updates...");
-            UpdateForm updateForm = new UpdateForm(Plugins.All());
-            updateForm.ShowDialog(this);
+            panel.Controls.Clear();
+            panel.Controls.Add(c.InfoPage ?? new InfoPage());
+            panel.Size = c.InfoPage?.Size ?? new Size(300, 300);
         }
     }
+
+    internal void PluginControl_Hover(object? sender, EventArgs e)
+    {
+        if (sender is IPlugin c) toolStripStatusLabel.Text = $"{c.Name} ({c.Version}) : {c.Description}";
+    }
+
+    internal void PluginControl_DataReceived(object? sender, Dictionary<string, string> e)
+    {
+        foreach (var plugin in _plugins.Caches() ?? [])
+        {
+            if (plugin is not ICache c) continue;
+            c.Write(e);
+        }
+    }
+
+    private void CheckForUpdates(object sender, EventArgs e)
+    {
+        Debug.WriteLine("Checking for updates...");
+        UpdateForm updateForm = new(_plugins.All());
+        updateForm.ShowDialog(this);
+    }
+
 }

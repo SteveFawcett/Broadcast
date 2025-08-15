@@ -92,7 +92,7 @@
             checkForUpdatesToolStripMenuItem.Name = "checkForUpdatesToolStripMenuItem";
             checkForUpdatesToolStripMenuItem.Size = new Size(171, 22);
             checkForUpdatesToolStripMenuItem.Text = "Check for Updates";
-            checkForUpdatesToolStripMenuItem.Click += checkForUpdatesToolStripMenuItem_Click;
+            checkForUpdatesToolStripMenuItem.Click += CheckForUpdates;
             // 
             // MainForm
             // 

@@ -1,25 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Broadcast.SubForms;
 
-namespace Broadcast.SubForms
+internal sealed class Combo : DataGridViewComboBoxCell
 {
-    internal sealed class Combo : DataGridViewComboBoxCell
+    public Combo(string?[] items)
     {
-        public Combo(string?[] items)
-        {
-            DropDownWidth = 200;
-            FlatStyle = FlatStyle.Flat;
- 
-            ValueType = typeof(string);
+        DropDownWidth = 200;
+        FlatStyle = FlatStyle.Flat;
 
-            if (items?.Length > 0)
-            {
-                Items.AddRange(items);
-                Value = items[0];
-            }
+        ValueType = typeof(string);
+
+        if (items?.Length > 0)
+        {
+            Items.AddRange(items);
+            Value = items[0];
         }
     }
 }

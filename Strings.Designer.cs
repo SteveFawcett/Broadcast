@@ -70,6 +70,15 @@ namespace Broadcast {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Plugins Starting.
+        /// </summary>
+        internal static string PluginStarting {
+            get {
+                return ResourceManager.GetString("PluginStarting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Broadcast Start up.
         /// </summary>
         internal static string start {

@@ -1,30 +1,25 @@
-using Microsoft.Extensions.Configuration;
 using Broadcast.SubForms;
+using Microsoft.Extensions.Configuration;
 
-namespace Broadcast
+namespace Broadcast;
+
+internal static class Program
 {
-    internal static class Program
+    /// <summary>
+    ///     The main entry point for the application.
+    /// </summary>
+    [STAThread]
+    private static void Main()
     {
-        /// <summary>
-        ///  The main entry point for the application.
-        /// </summary>
+        var builder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("settings.json", true, true)
+            .AddEnvironmentVariables();
 
-        [STAThread]
-        static void Main()
-        {
-            IConfigurationRoot Configuration;
+        IConfiguration configuration = builder.Build();
 
-            var builder = new ConfigurationBuilder()
-                    .SetBasePath( Directory.GetCurrentDirectory())
-                    .AddJsonFile("settings.json", optional: true, reloadOnChange: true)
-                    .AddEnvironmentVariables(); 
-
-            Configuration = builder.Build();
-      
-            ApplicationConfiguration.Initialize();
-            StartUp StartUp = new StartUp(Configuration); // Initialize the StartUp form and load plugins
-            Application.Run(new MainForm( Configuration , StartUp ));
-        }
-
+        ApplicationConfiguration.Initialize();
+        StartUp startUp = new(configuration); // Initialize the StartUp form and load plugins
+        Application.Run(new MainForm(startUp));
     }
 }
