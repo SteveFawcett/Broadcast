@@ -3,21 +3,33 @@ using Microsoft.Extensions.Configuration;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Reflection;
+using Microsoft.Extensions.Logging;
 using static Broadcast.SubForms.MainForm;
 
 namespace Broadcast.SubForms;
 
-public partial class StartUp : Form
+public interface IStartup
+{
+    public void AttachTo(Form parent);
+    public IEnumerable<BroadcastCacheBase>? Caches();
+    public IEnumerable<Dictionary<string, string>> All();
+}
+
+public partial class StartUp : Form, IStartup
 {
     private IEnumerable<IPlugin> _plugins = [];
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<MainForm> _logger;
 
-    public StartUp(IConfiguration configuration)
+    public StartUp(IConfiguration configuration , ILogger<MainForm> logger )
     {
+        _configuration = configuration;
+        _logger = logger;
         InitializeComponent();
-        ShowDialog(configuration);
+        ShowDialog();
     }
 
-    private void ShowDialog(IConfiguration configuration)
+    public new void ShowDialog()
     {
         var text =
             $"{Strings.version}: {Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? Strings.unknown}";
@@ -28,7 +40,7 @@ public partial class StartUp : Form
         textBox.AppendLine(Strings.start);
         textBox.AppendLine(text);
 
-        _plugins = ReadDLLs(configuration, textBox);
+        _plugins = ReadDLLs(_configuration, textBox);
 
         Hide();
     }

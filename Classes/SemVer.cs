@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Broadcast.SubForms;
+namespace Broadcast.Classes;
 
 public class SemVer : IComparable<SemVer>
 {

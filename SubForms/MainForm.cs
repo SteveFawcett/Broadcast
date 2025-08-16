@@ -1,23 +1,29 @@
-using System.Diagnostics;
 using BroadcastPluginSDK;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace Broadcast.SubForms;
 
 public partial class MainForm : Form
 {
     public delegate IEnumerable<KeyValuePair<string, string>> CacheReader(List<string> values);
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<MainForm> _logger;
+    private readonly IStartup _plugins;
 
-    private readonly StartUp _plugins;
-
-    public MainForm(StartUp plugins)
+    public MainForm(IConfiguration configuration, ILogger<MainForm> logger , IStartup plugins)
     {
+        _configuration = configuration;
+        _logger = logger;
         _plugins = plugins;
+
         InitializeComponent();
         toolStripStatusLabel.Text = Strings.PluginStarting;
 
         _plugins.AttachTo(this);
 
-        _plugins.AttachMasterReader();
+        //_plugins.AttachMasterReader();
     }
 
     public void PluginControl_Click(object? sender, EventArgs e)

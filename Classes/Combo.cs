@@ -1,4 +1,4 @@
-﻿namespace Broadcast.SubForms;
+﻿namespace Broadcast.Classes;
 
 internal sealed class Combo : DataGridViewComboBoxCell
 {

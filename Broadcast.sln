@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalCachePlugin", "..\Loca
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDataPlugin", "..\TestDataPlugin\TestDataPlugin.csproj", "{78844FC0-EE0C-46F4-A45F-68884F4F2457}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "BroadcastSetup", "..\BroadcastSetup\BroadcastSetup.vdproj", "{74B7EE64-A442-B73A-8764-8EA7FC9D7E16}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -114,6 +116,12 @@ Global
 		{78844FC0-EE0C-46F4-A45F-68884F4F2457}.Release|x64.Build.0 = Release|Any CPU
 		{78844FC0-EE0C-46F4-A45F-68884F4F2457}.Release|x86.ActiveCfg = Release|Any CPU
 		{78844FC0-EE0C-46F4-A45F-68884F4F2457}.Release|x86.Build.0 = Release|Any CPU
+		{74B7EE64-A442-B73A-8764-8EA7FC9D7E16}.Debug|Any CPU.ActiveCfg = Debug
+		{74B7EE64-A442-B73A-8764-8EA7FC9D7E16}.Debug|x64.ActiveCfg = Debug
+		{74B7EE64-A442-B73A-8764-8EA7FC9D7E16}.Debug|x86.ActiveCfg = Debug
+		{74B7EE64-A442-B73A-8764-8EA7FC9D7E16}.Release|Any CPU.ActiveCfg = Release
+		{74B7EE64-A442-B73A-8764-8EA7FC9D7E16}.Release|x64.ActiveCfg = Release
+		{74B7EE64-A442-B73A-8764-8EA7FC9D7E16}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

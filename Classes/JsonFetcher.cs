@@ -1,4 +1,4 @@
-﻿namespace Broadcast.SubForms;
+﻿namespace Broadcast.Classes;
 
 public class JsonFetcher
 {

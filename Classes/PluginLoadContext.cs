@@ -3,7 +3,7 @@ using System.Runtime.Loader;
 
 #pragma warning disable IDE0290
 
-namespace Broadcast;
+namespace Broadcast.Classes;
 
 internal class PluginLoadContext : AssemblyLoadContext
 {
@@ -22,11 +22,11 @@ internal class PluginLoadContext : AssemblyLoadContext
         return null!;
     }
 
-    protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
+    protected override nint LoadUnmanagedDll(string unmanagedDllName)
     {
         var libraryPath = _resolver.ResolveUnmanagedDllToPath(unmanagedDllName);
         if (libraryPath != null) return LoadUnmanagedDllFromPath(libraryPath);
 
-        return IntPtr.Zero;
+        return nint.Zero;
     }
 }
