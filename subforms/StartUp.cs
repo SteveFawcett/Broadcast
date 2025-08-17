@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using static Broadcast.SubForms.MainForm;
 
@@ -10,7 +11,7 @@ namespace Broadcast.SubForms;
 
 public interface IStartup
 {
-    public void AttachTo(Form parent);
+    public IEnumerable<IPlugin> Plugins { get; set; }
     public IEnumerable<BroadcastCacheBase>? Caches();
     public IEnumerable<Dictionary<string, string>> All();
 }
@@ -21,12 +22,19 @@ public partial class StartUp : Form, IStartup
     private readonly IConfiguration _configuration;
     private readonly ILogger<MainForm> _logger;
 
+    public IEnumerable<IPlugin> Plugins
+    {
+        get => _plugins;
+        set => _plugins = value;
+    }
+
     public StartUp(IConfiguration configuration , ILogger<MainForm> logger )
     {
         _configuration = configuration;
         _logger = logger;
         InitializeComponent();
         ShowDialog();
+        AttachMasterReader();
     }
 
     public new void ShowDialog()
@@ -40,22 +48,18 @@ public partial class StartUp : Form, IStartup
         textBox.AppendLine(Strings.start);
         textBox.AppendLine(text);
 
-        _plugins = ReadDLLs(_configuration, textBox);
+        _plugins = ReadDLLs( textBox);
 
         Hide();
     }
 
-    public BroadcastCacheBase? MasterCache()
+    public ICache? MasterCache()
     {
-        foreach (var c in Caches())
+        var c = Caches()?.FirstOrDefault(c => c.Master);
+        if (c != null)
         {
-            Debug.WriteLine($"Resolved type: {c.GetType().Name}");
-
-            if (c.Master)
-            {
-                Debug.WriteLine($"Found master cache: {c.Name}");
-                return c;
-            }
+            Debug.WriteLine($"Found master cache: {c.Name}");
+            return c;
         }
 
         Debug.WriteLine("No master cache found.");
@@ -64,9 +68,19 @@ public partial class StartUp : Form, IStartup
 
     public IEnumerable<BroadcastCacheBase>? Caches()
     {
+        if (_plugins == null) // Check if _plugins is null
+        {
+            Debug.WriteLine("Plugins collection is null.");
+            yield break; // Exit the method if _plugins is null
+        }
+
         foreach (var plugin in _plugins)
-            if (plugin is BroadcastCacheBase c)
-                yield return c;
+        {
+            if (plugin is ICache c)
+            {
+                yield return (BroadcastCacheBase)plugin;
+            }
+        }
     }
 
     public IEnumerable<IProvider>? Providers()
@@ -109,28 +123,6 @@ public partial class StartUp : Form, IStartup
         }
     }
 
-    public void AttachTo(Form parent)
-    {
-        if (parent is MainForm mainForm)
-            foreach (var plugin in _plugins)
-            {
-                mainForm.flowLayoutPanel1.Controls.Add(plugin.MainIcon);
-                plugin.Click += mainForm.PluginControl_Click;
-                plugin.MouseHover += mainForm.PluginControl_Hover;
-
-                var res = plugin.Start();
-                if (!string.IsNullOrWhiteSpace(res)) mainForm.toolStripStatusLabel.Text = res;
-
-                if (plugin is IProvider provider)
-                {
-                    Debug.WriteLine($"[1] Plugin {plugin.Name} implements {nameof(IProvider)}");
-                    provider.DataReceived += mainForm.PluginControl_DataReceived;
-                }
-
-                if (plugin is ICache cache) Debug.WriteLine($"[2] Plugin {plugin.Name} implements {nameof(ICache)}");
-                //TODO: Implement code to write to cache when data is received
-            }
-    }
 
     private static void SetupAssemblyResolver(List<Assembly> loadedAssemblies)
     {
@@ -145,11 +137,11 @@ public partial class StartUp : Form, IStartup
         };
     }
 
-    public static IEnumerable<IPlugin> ReadDLLs(IConfiguration configuration, TextBox tb)
+    public IEnumerable<IPlugin> ReadDLLs( TextBox tb)
     {
         List<IPlugin> commands = [];
 
-        var directory = configuration["plugindirectory"] ?? AppDomain.CurrentDomain.BaseDirectory;
+        var directory = _configuration["plugindirectory"] ?? AppDomain.CurrentDomain.BaseDirectory;
 
         Debug.WriteLine($"Using plugin directory: {directory}");
 
@@ -167,7 +159,8 @@ public partial class StartUp : Form, IStartup
         foreach (var command in commands)
         {
             tb.AppendLine($"Configuring {command.Name} using stanza {command.Stanza}");
-            var section = configuration.GetSection(command.Stanza);
+            var section = _configuration.GetSection(command.Stanza);
+            
             if (section == null)
             {
                 tb.AppendLine($"No configuration found for {command.Stanza}. Skipping configuration.");
@@ -177,7 +170,10 @@ public partial class StartUp : Form, IStartup
             if (command.AttachConfiguration(section) == false)
             {
                 var dict = new Dictionary<string, string?>();
-                foreach (var child in section.GetChildren()) dict[child.Key] = child.Value;
+                foreach (var child in section.GetChildren())
+                {
+                    dict[child.Key] = child.Value;
+                }
                 command.AttachConfiguration(dict);
             }
         }
@@ -218,7 +214,7 @@ public partial class StartUp : Form, IStartup
         return assemblies;
     }
 
-    private static List<IPlugin> CreateCommands(Assembly assembly, TextBox tb, string filePath)
+    private List<IPlugin> CreateCommands(Assembly assembly, TextBox tb, string filePath)
     {
         List<IPlugin> commands = [];
         Type[] types = [];
@@ -238,7 +234,7 @@ public partial class StartUp : Form, IStartup
                 tb.AppendLine($"Found type: {type.FullName} which implements IPlugin");
 
                 // Ensure the instance is not null and handle potential nullability issues
-                if (Activator.CreateInstance(type) is IPlugin instance)
+                if (Activator.CreateInstance(type  ) is IPlugin instance)
                 {
                     instance.FilePath = filePath;
                     commands.Add(instance);

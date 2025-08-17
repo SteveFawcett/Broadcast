@@ -32,9 +32,5 @@ internal static class Program
 
         Application.Run( mainForm );
 
-        // TODO Might be able tp remove this if not needed
-        //      ApplicationConfiguration.Initialize();
-        //      StartUp startUp = new(configuration); // Initialize the StartUp form and load plugins
-        //      Application.Run(new MainForm(startUp));
     }
 }
