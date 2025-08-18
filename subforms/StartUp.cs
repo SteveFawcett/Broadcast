@@ -9,34 +9,44 @@ using static Broadcast.SubForms.MainForm;
 
 namespace Broadcast.SubForms;
 
+
 public interface IStartup
 {
-    public IEnumerable<IPlugin> Plugins { get; set; }
-    public IEnumerable<BroadcastCacheBase>? Caches();
-    public IEnumerable<Dictionary<string, string>> All();
+    public IEnumerable<Assembly> LoadAssemblies();
+    public void Hide();
+    public void AddText(string message);
 }
 
 public partial class StartUp : Form, IStartup
 {
-    private IEnumerable<IPlugin> _plugins = [];
     private readonly IConfiguration _configuration;
-    private readonly ILogger<MainForm> _logger;
+    private readonly ILogger _logger;
+    private readonly IPluginRegistry? _registry; 
 
-    public IEnumerable<IPlugin> Plugins
+    public void AddText( string message)
     {
-        get => _plugins;
-        set => _plugins = value;
+        textBox.AppendLine(message);
+        Debug.WriteLine(message);
     }
 
-    public StartUp(IConfiguration configuration , ILogger<MainForm> logger )
+    public StartUp(IConfiguration configuration , ILogger logger )
     {
         _configuration = configuration;
         _logger = logger;
+        _registry = null;
+
         InitializeComponent();
-        ShowDialog();
-        AttachMasterReader();
     }
 
+    public StartUp(IConfiguration configuration, ILogger logger, IPluginRegistry registry)
+    {
+        _configuration = configuration;
+        _logger = logger;
+        _registry = registry;
+
+        InitializeComponent();
+        AttachMasterReader();
+    }
     public new void ShowDialog()
     {
         var text =
@@ -45,81 +55,29 @@ public partial class StartUp : Form, IStartup
         Refresh();
 
         textBox.Clear();
-        textBox.AppendLine(Strings.start);
-        textBox.AppendLine(text);
+        AddText(Strings.start);
+        AddText(text);
 
-        _plugins = ReadDLLs( textBox);
-
-        Hide();
-    }
-
-    public ICache? MasterCache()
-    {
-        var c = Caches()?.FirstOrDefault(c => c.Master);
-        if (c != null)
-        {
-            Debug.WriteLine($"Found master cache: {c.Name}");
-            return c;
-        }
-
-        Debug.WriteLine("No master cache found.");
-        return null;
-    }
-
-    public IEnumerable<BroadcastCacheBase>? Caches()
-    {
-        if (_plugins == null) // Check if _plugins is null
-        {
-            Debug.WriteLine("Plugins collection is null.");
-            yield break; // Exit the method if _plugins is null
-        }
-
-        foreach (var plugin in _plugins)
-        {
-            if (plugin is ICache c)
-            {
-                yield return (BroadcastCacheBase)plugin;
-            }
-        }
-    }
-
-    public IEnumerable<IProvider>? Providers()
-    {
-        foreach (var plugin in _plugins)
-            if (plugin is IProvider c)
-                yield return c;
     }
 
     public void AttachMasterReader()
     {
-        var master = MasterCache();
+        if (_registry is null)
+        {
+            AddText("No registry available, skipping master reader attachment.");
+            return;
+        }
+        var master = _registry.MasterCache();
 
         if (master is null) return;
 
         if (master is BroadcastCacheBase c)
         {
-            foreach (var plugin in _plugins)
+            foreach (var plugin in _registry.GetAll())
             {
-                Debug.WriteLine($"Attaching master reader to {plugin.Name} => {c.Name}");
+                //AddText($"Attaching master reader to {plugin.Name} => {c.Name}");
                 plugin.GetCacheData = c.CacheReader;
             }
-        }
-    }
-
-    public IEnumerable<Dictionary<string, string>> All()
-    {
-        foreach (var plugin in _plugins)
-        {
-            Dictionary<string, string> c = new()
-            {
-                { "Name", plugin.Name },
-                { "Version", plugin.Version },
-                { "FilePath", plugin.FilePath },
-                { "Description", plugin.Description },
-                { "RepositoryUrl", plugin.RepositoryUrl }
-            };
-
-            yield return c;
         }
     }
 
@@ -137,26 +95,30 @@ public partial class StartUp : Form, IStartup
         };
     }
 
-    public IEnumerable<IPlugin> ReadDLLs( TextBox tb)
+    public IEnumerable<Assembly> LoadAssemblies()
     {
-        List<IPlugin> commands = [];
+        List<Assembly> assemblies = [];
 
         var directory = _configuration["plugindirectory"] ?? AppDomain.CurrentDomain.BaseDirectory;
 
-        Debug.WriteLine($"Using plugin directory: {directory}");
+        AddText($"Using plugin directory: {directory}");
 
         foreach (var zipPath in Directory.GetFiles(directory, "*.zip"))
         {
-            Debug.WriteLine($"Looking for plugin zip at {zipPath}");
+            AddText($"Looking for plugin zip at {zipPath}");
 
             var dllBytesList = ExtractDllsFromZip(zipPath);
             var loadedAssemblies = LoadAssembliesFromBytes(dllBytesList);
             SetupAssemblyResolver(loadedAssemblies);
 
-            foreach (var assembly in loadedAssemblies) commands.AddRange(CreateCommands(assembly, tb, zipPath));
+            assemblies.AddRange(loadedAssemblies);
         }
 
-        foreach (var command in commands)
+        return assemblies;
+    }
+
+    /***
+    foreach (var command in commands)
         {
             tb.AppendLine($"Configuring {command.Name} using stanza {command.Stanza}");
             var section = _configuration.GetSection(command.Stanza);
@@ -181,6 +143,7 @@ public partial class StartUp : Form, IStartup
         return commands;
     }
 
+    ****/
 
     private static List<byte[]> ExtractDllsFromZip(string zipPath)
     {
@@ -214,49 +177,23 @@ public partial class StartUp : Form, IStartup
         return assemblies;
     }
 
-    private List<IPlugin> CreateCommands(Assembly assembly, TextBox tb, string filePath)
-    {
-        List<IPlugin> commands = [];
-        Type[] types = [];
-
-        try
-        {
-            types = assembly.GetTypes();
-        }
-        catch (ReflectionTypeLoadException)
-        {
-            Debug.WriteLine($"Partial type load from {assembly.FullName}:");
-        }
-
-        foreach (var type in types)
-            if (typeof(IPlugin).IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract)
-            {
-                tb.AppendLine($"Found type: {type.FullName} which implements IPlugin");
-
-                // Ensure the instance is not null and handle potential nullability issues
-                if (Activator.CreateInstance(type  ) is IPlugin instance)
-                {
-                    instance.FilePath = filePath;
-                    commands.Add(instance);
-                    break;
-                }
-
-                tb.AppendLine($"Failed to create an instance of type: {type.FullName}");
-            }
-
-        return commands;
-    }
 }
 
 public static class WinFormsExtensions
 {
     public static void AppendLine(this TextBox source, string value)
     {
-        Debug.WriteLine(value);
+        try
+        {
+            if (source.Text.Length == 0)
+                source.Text = value;
+            else
+                source.AppendText("\r\n" + value);
+        }
+        catch (Exception )
+        {
+            Debug.WriteLine( value);
+        }
 
-        if (source.Text.Length == 0)
-            source.Text = value;
-        else
-            source.AppendText("\r\n" + value);
     }
 }
