@@ -25,6 +25,7 @@ internal static class Program
         {
             builder.AddConsole();
             builder.SetMinimumLevel(LogLevel.Information);
+            builder.AddDebug();
         });
 
         var logger = loggerFactory.CreateLogger("MSFS");
@@ -32,7 +33,7 @@ internal static class Program
         // Setup DI container
         var services = new ServiceCollection();
         services.AddSingleton(configuration);
-        services.AddSingleton(loggerFactory);
+        services.AddSingleton<ILoggerFactory>(loggerFactory);
         services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
         services.AddSingleton<IPluginRegistry, PluginRegistry>();
         services.AddTransient<MainForm>();
@@ -45,8 +46,13 @@ internal static class Program
 
         // Discover and register plugin types before building provider
         foreach (var assembly in assemblies)
-        foreach (var pluginType in DiscoverPluginTypes(assembly))
-            services.AddTransient(typeof(IPlugin), pluginType);
+        {
+            foreach (var pluginType in DiscoverPluginTypes(assembly))
+            {
+                logger.LogInformation($"Registering plugin: {pluginType.FullName}");
+                services.AddTransient(typeof(IPlugin), pluginType);
+            }
+        }
 
         // Build provider after all services are registered
         var provider = services.BuildServiceProvider();
