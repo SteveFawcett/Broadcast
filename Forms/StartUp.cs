@@ -1,14 +1,13 @@
-﻿using BroadcastPluginSDK;
-using Microsoft.Extensions.Configuration;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO.Compression;
 using System.Reflection;
-using System.Runtime.CompilerServices;
+using BroadcastPluginSDK;
+using BroadcastPluginSDK.abstracts;
+using BroadcastPluginSDK.Interfaces;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using static Broadcast.SubForms.MainForm;
 
 namespace Broadcast.SubForms;
-
 
 public interface IStartup
 {
@@ -21,15 +20,9 @@ public partial class StartUp : Form, IStartup
 {
     private readonly IConfiguration _configuration;
     private readonly ILogger _logger;
-    private readonly IPluginRegistry? _registry; 
+    private readonly IPluginRegistry? _registry;
 
-    public void AddText( string message)
-    {
-        textBox.AppendLine(message);
-        Debug.WriteLine(message);
-    }
-
-    public StartUp(IConfiguration configuration , ILogger logger )
+    public StartUp(IConfiguration configuration, ILogger logger)
     {
         _configuration = configuration;
         _logger = logger;
@@ -45,54 +38,12 @@ public partial class StartUp : Form, IStartup
         _registry = registry;
 
         InitializeComponent();
-        AttachMasterReader();
-    }
-    public new void ShowDialog()
-    {
-        var text =
-            $"{Strings.version}: {Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? Strings.unknown}";
-        Show();
-        Refresh();
-
-        textBox.Clear();
-        AddText(Strings.start);
-        AddText(text);
-
     }
 
-    public void AttachMasterReader()
+    public void AddText(string message)
     {
-        if (_registry is null)
-        {
-            AddText("No registry available, skipping master reader attachment.");
-            return;
-        }
-        var master = _registry.MasterCache();
-
-        if (master is null) return;
-
-        if (master is BroadcastCacheBase c)
-        {
-            foreach (var plugin in _registry.GetAll())
-            {
-                //AddText($"Attaching master reader to {plugin.Name} => {c.Name}");
-                plugin.GetCacheData = c.CacheReader;
-            }
-        }
-    }
-
-
-    private static void SetupAssemblyResolver(List<Assembly> loadedAssemblies)
-    {
-        AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
-        {
-            var requestedName = new AssemblyName(args.Name).Name;
-
-            var match = loadedAssemblies.FirstOrDefault(a =>
-                string.Equals(a.GetName().Name, requestedName, StringComparison.OrdinalIgnoreCase));
-
-            return match;
-        };
+        textBox.AppendLine(message);
+        Debug.WriteLine(message);
     }
 
     public IEnumerable<Assembly> LoadAssemblies()
@@ -117,12 +68,37 @@ public partial class StartUp : Form, IStartup
         return assemblies;
     }
 
+    public new void ShowDialog()
+    {
+        var text =
+            $"{Strings.version}: {Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? Strings.unknown}";
+        Show();
+        Refresh();
+
+        textBox.Clear();
+        AddText(Strings.start);
+        AddText(text);
+    }
+
+    private static void SetupAssemblyResolver(List<Assembly> loadedAssemblies)
+    {
+        AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
+        {
+            var requestedName = new AssemblyName(args.Name).Name;
+
+            var match = loadedAssemblies.FirstOrDefault(a =>
+                string.Equals(a.GetName().Name, requestedName, StringComparison.OrdinalIgnoreCase));
+
+            return match;
+        };
+    }
+
     /***
     foreach (var command in commands)
         {
             tb.AppendLine($"Configuring {command.Name} using stanza {command.Stanza}");
             var section = _configuration.GetSection(command.Stanza);
-            
+
             if (section == null)
             {
                 tb.AppendLine($"No configuration found for {command.Stanza}. Skipping configuration.");
@@ -176,7 +152,6 @@ public partial class StartUp : Form, IStartup
 
         return assemblies;
     }
-
 }
 
 public static class WinFormsExtensions
@@ -190,10 +165,9 @@ public static class WinFormsExtensions
             else
                 source.AppendText("\r\n" + value);
         }
-        catch (Exception )
+        catch (Exception)
         {
-            Debug.WriteLine( value);
+            Debug.WriteLine(value);
         }
-
     }
 }
