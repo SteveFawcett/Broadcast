@@ -57,20 +57,18 @@ public partial class MainForm : Form
     {
         //Logger.LogDebug("Checking for updates...");
         // TODO: FIX
-        // UpdateForm updateForm = new(_registry.GetAll());
-        // updateForm.ShowDialog(this);
+        UpdateForm updateForm = new(_registry.GetAll());
+        updateForm.ShowDialog(this);
     }
 
     public void AttachToForm()
     {
         foreach (var plugin in _registry.GetAll())
         {
-            //Debug.WriteLine($"Attaching plugin {plugin.Name} to form");
-            //if (plugin.InfoPage == null)
-            // {
-            //     Debug.WriteLine($"Plugin {plugin.Name} does not have an InfoPage set.");
-            // }
-            flowLayoutPanel1.Controls.Add(plugin.MainIcon);
+            var icon = plugin.MainIcon;
+            icon.Size = new Size((int)(flowLayoutPanel1.Width * 0.8 ),
+                                 (int)(flowLayoutPanel1.Width * 0.8 )) ;
+            flowLayoutPanel1.Controls.Add( icon );
             plugin.Click += PluginControl_Click;
             plugin.MouseHover += PluginControl_Hover;
 

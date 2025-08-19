@@ -1,148 +1,128 @@
-﻿using System.Diagnostics;
-using Broadcast.Classes;
-using Newtonsoft.Json.Linq;
+﻿using Broadcast.Classes;
+using BroadcastPluginSDK.Interfaces;
+using Markdig;
+using System;
+using System.Diagnostics;
+using System.Security.Policy;
+using static System.ComponentModel.Design.ObjectSelectorEditor;
 
 namespace Broadcast.SubForms;
 
 public partial class UpdateForm : Form
 {
-    private readonly IEnumerable<Dictionary<string, string>> Plugins;
+    private IReadOnlyList<IPlugin> _plugins;
+    private const string jsonUrl = "https://raw.githubusercontent.com/SteveFawcett/delivery/refs/heads/main/releases.json";
 
-    public UpdateForm(IEnumerable<Dictionary<string, string>> plugins)
+    private async void UpdateForm_Load(object sender, EventArgs e)
     {
+        await webView21.EnsureCoreWebView2Async();
+
+        var service = await ReleaseService.CreateAsync(jsonUrl);
+        var releases = service.GetReleaseItems();
+
+        bool first = true;
+        foreach (var release in releases)
+        {
+            if (first)
+            {
+                string html = await GetReadme(release.ReadMeUrl);
+                webView21.NavigateToString(html);
+                first = false;
+            }
+
+            listBox1.Items.Add(release);
+        }
+    }
+
+    private async Task<string> GetReadme( string  url )
+    {
+        try
+        {
+            string markdown = await StringDownloader.DownloadStringAsync(url) ?? "xx";
+            string html = Markdown.ToHtml(markdown);
+            return html;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error fetching README: {ex.Message}");
+            return string.Empty;
+        }
+    }
+    private async void ListBox1_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (listBox1.SelectedItem is ReleaseListItem selected)
+        {
+            string markdown = await GetReadme(selected.ReadMeUrl);
+
+            Debug.WriteLine($"Repo: {selected.Repo}\nVersion: {selected.Version}\nZip: {selected.ZipName}");
+
+            if (!string.IsNullOrWhiteSpace(markdown))
+            {
+                webView21.NavigateToString(markdown);
+            }
+            else
+            {
+                webView21.NavigateToString("<p>README not found or failed to load.</p>");
+            }
+        }
+    }
+
+    public UpdateForm(IReadOnlyList<IPlugin> plugins)
+    {
+        _plugins = plugins;
+
         InitializeComponent();
-        Plugins = plugins;
+        listBox1.AutoSize = false;
 
-        setup();
+        listBox1.DrawMode = DrawMode.OwnerDrawFixed;
+        listBox1.ItemHeight = 60; // Adjust for visual space
+        listBox1.DrawItem += ListBox1_DrawItem;
+        listBox1.SelectedIndexChanged += ListBox1_SelectedIndexChanged;
+        this.Load += UpdateForm_Load;
 
-        show();
+        listBox1.Dock = DockStyle.Fill;
+        listBox1.Margin = new Padding(0);
+        listBox1.AutoSize = false;
+        listBox1.Anchor = AnchorStyles.Top | AnchorStyles.Left;
 
-        foreach (DataGridViewRow row in dataGridView1.Rows) Fetch(row, json => DoSomething(json));
+        //Setup();
     }
-
-    public static string ToApiRepoUrl(string repoUrl)
+    private void ListBox1_DrawItem(object sender, DrawItemEventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(repoUrl))
-            throw new ArgumentException("Repository URL cannot be null or empty.", nameof(repoUrl));
+        if (e.Index < 0) return;
 
-        // Normalize and parse the URL
-        var uri = new Uri(repoUrl);
-        var segments = uri.AbsolutePath.Trim('/').Split('/');
+        var item = (ReleaseListItem)listBox1.Items[e.Index];
+        var g = e.Graphics;
+        var bounds = e.Bounds;
 
-        if (segments.Length != 2)
-            throw new FormatException(
-                "Invalid GitHub repository URL format. Expected format: https://github.com/{owner}/{repo}");
+        // Background
+        g.FillRectangle(new SolidBrush(e.BackColor), bounds);
 
-        var owner = segments[0];
-        var repo = segments[1];
+        // Repo + Version
+        var font = new Font("Segoe UI", 10, FontStyle.Bold);
+        g.DrawString($"{item.Repo} - {item.Version}", font, Brushes.Black, bounds.X + 5, bounds.Y + 5);
 
-        return $"https://api.github.com/repos/{owner}/{repo}/";
-    }
+        // Zip name
+        var subFont = new Font("Segoe UI", 9, FontStyle.Regular);
+        g.DrawString(item.ZipName, subFont, Brushes.Gray, bounds.X + 5, bounds.Y + 25);
 
-
-    public void DoSomething(JArray json)
-    {
-        foreach (var entry in json) Debug.WriteLine($"{entry["tag_name"]}");
-    }
-
-    private void Fetch(DataGridViewRow row, Action<JArray> onComplete)
-    {
-        var repoCell = row.Cells["Repository"].Value?.ToString();
-        if (string.IsNullOrWhiteSpace(repoCell))
-            return;
-
-        var api = ToApiRepoUrl(repoCell);
-        Debug.WriteLine($"Converting for {repoCell} => {api}");
-
-        var thread = new Thread(() =>
+        // Latest badge
+        if (item.IsLatest)
         {
-            try
-            {
-                var fetcher = new JsonFetcher(api);
-                var json = fetcher.GetJsonAsync("releases", TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
-                var jArray = JArray.Parse(json);
-
-                var tags = jArray
-                    .Select(entry => entry["tag_name"]?.ToString())
-                    .Where(tag => !string.IsNullOrEmpty(tag))
-                    .ToArray();
-
-                var sorted = tags
-                    .Select(tag => new { Original = tag, SemVer = SemVer.Parse(tag ?? string.Empty) })
-                    .OrderByDescending(x => x.SemVer)
-                    .Select(x => x.Original)
-                    .ToArray();
-
-                // UI updates must be marshaled to the main thread
-                row.DataGridView?.Invoke(() =>
-                {
-                    row.Cells["Options"] = new Combo(sorted);
-                    ///onComplete?.Invoke(jArray);
-                });
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Fetch failed: {ex.Message}");
-            }
-        });
-
-        thread.IsBackground = true;
-        thread.Start();
-    }
-
-
-    private void setup()
-    {
-        dataGridView1.Columns.Clear();
-        dataGridView1.AllowUserToAddRows = false;
-        dataGridView1.RowHeadersVisible = false;
-        dataGridView1.AllowUserToResizeRows = false;
-        dataGridView1.AllowUserToResizeColumns = false;
-        dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-        dataGridView1.MultiSelect = false; // Optional: only one row at a time
-
-        dataGridView1.Columns.Add("Name", "Name");
-        dataGridView1.Columns.Add("Version", "Version");
-        dataGridView1.Columns.Add("Repository", "Repository");
-        dataGridView1.Columns.Add("Options", "Versions");
-
-        dataGridView1.CellClick += (s, e) =>
-        {
-            if (e.RowIndex >= 0)
-            {
-                dataGridView1.ClearSelection();
-                dataGridView1.Rows[e.RowIndex].Selected = true;
-            }
-        };
-    }
-
-    private void show()
-    {
-        // Add ComboBox column
-        dataGridView1.Rows.Clear();
-
-        foreach (var plugin in Plugins)
-        {
-            var rowIndex = dataGridView1.Rows.Add();
-            var row = dataGridView1.Rows[rowIndex];
-
-            row.Cells["Name"].Value = plugin.GetValueOrDefault("Name", "Unknown");
-            row.Cells["Version"].Value = plugin.GetValueOrDefault("Version", "N/A");
-            row.Cells["Repository"].Value = plugin.GetValueOrDefault("RepositoryUrl", "—");
-
-            row.Cells["Options"] = new Combo([]);
+            var badge = new Rectangle(bounds.Right - 80, bounds.Y + 5, 70, 20);
+            g.FillRectangle(Brushes.Green, badge);
+            g.DrawString("Latest", subFont, Brushes.White, badge.X + 10, badge.Y + 2);
         }
 
-        dataGridView1.ReadOnly = false;
-        dataGridView1.Columns["Name"].ReadOnly = true;
-        dataGridView1.Columns["Version"].ReadOnly = true;
-        dataGridView1.Columns["Repository"].ReadOnly = true;
-
-        dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+        e.DrawFocusRectangle();
     }
-
     private void CloseForm(object sender, MouseEventArgs e)
     {
         Close();
+    }
+
+    private void webView21_Click(object sender, EventArgs e)
+    {
+
     }
 }

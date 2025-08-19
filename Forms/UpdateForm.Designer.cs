@@ -28,23 +28,17 @@
         /// </summary>
         private void InitializeComponent()
         {
-            dataGridView1 = new DataGridView();
             button1 = new Button();
-            ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
+            panel2 = new Panel();
+            listBox1 = new ListBox();
+            webView21 = new Microsoft.Web.WebView2.WinForms.WebView2();
+            panel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)webView21).BeginInit();
             SuspendLayout();
-            // 
-            // dataGridView1
-            // 
-            dataGridView1.BackgroundColor = SystemColors.Control;
-            dataGridView1.BorderStyle = BorderStyle.None;
-            dataGridView1.Location = new Point(12, 10);
-            dataGridView1.Name = "dataGridView1";
-            dataGridView1.Size = new Size(780, 373);
-            dataGridView1.TabIndex = 0;
             // 
             // button1
             // 
-            button1.Location = new Point(713, 404);
+            button1.Location = new Point(713, 415);
             button1.Name = "button1";
             button1.Size = new Size(75, 23);
             button1.TabIndex = 2;
@@ -52,22 +46,57 @@
             button1.UseVisualStyleBackColor = true;
             button1.MouseClick += CloseForm;
             // 
+            // panel2
+            // 
+            panel2.BackColor = Color.White;
+            panel2.Controls.Add(listBox1);
+            panel2.Location = new Point(12, 50);
+            panel2.Name = "panel2";
+            panel2.Padding = new Padding(1);
+            panel2.Size = new Size(357, 349);
+            panel2.TabIndex = 5;
+            // 
+            // listBox1
+            // 
+            listBox1.BorderStyle = BorderStyle.None;
+            listBox1.FormattingEnabled = true;
+            listBox1.ItemHeight = 15;
+            listBox1.Location = new Point(14, 15);
+            listBox1.Name = "listBox1";
+            listBox1.Size = new Size(329, 315);
+            listBox1.TabIndex = 0;
+            // 
+            // webView21
+            // 
+            webView21.AllowExternalDrop = true;
+            webView21.BackColor = Color.White;
+            webView21.CreationProperties = null;
+            webView21.DefaultBackgroundColor = Color.White;
+            webView21.Location = new Point(385, 50);
+            webView21.Name = "webView21";
+            webView21.Size = new Size(401, 349);
+            webView21.TabIndex = 6;
+            webView21.ZoomFactor = 1D;
+            // 
             // UpdateForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(webView21);
+            Controls.Add(panel2);
             Controls.Add(button1);
-            Controls.Add(dataGridView1);
             Name = "UpdateForm";
             Text = "Update";
-            ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
+            panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)webView21).EndInit();
             ResumeLayout(false);
         }
 
         #endregion
-
-        private DataGridView dataGridView1;
         private Button button1;
+        private Panel panel2;
+        private ListBox listBox1;
+        private Microsoft.Web.WebView2.WinForms.WebView2 webView21;
     }
 }
