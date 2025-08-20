@@ -96,34 +96,6 @@ public partial class StartUp : Form, IStartup
         };
     }
 
-    /***
-    foreach (var command in commands)
-        {
-            tb.AppendLine($"Configuring {command.Name} using stanza {command.Stanza}");
-            var section = _configuration.GetSection(command.Stanza);
-
-            if (section == null)
-            {
-                tb.AppendLine($"No configuration found for {command.Stanza}. Skipping configuration.");
-                continue;
-            }
-
-            if (command.AttachConfiguration(section) == false)
-            {
-                var dict = new Dictionary<string, string?>();
-                foreach (var child in section.GetChildren())
-                {
-                    dict[child.Key] = child.Value;
-                }
-                command.AttachConfiguration(dict);
-            }
-        }
-
-        return commands;
-    }
-
-    ****/
-
     private static List<byte[]> ExtractDllsFromZip(string zipPath)
     {
         var dllBytesList = new List<byte[]>();

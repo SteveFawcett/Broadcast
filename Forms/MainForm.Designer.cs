@@ -108,6 +108,8 @@
             MainMenuStrip = menuStrip1;
             Name = "MainForm";
             Text = "Simulator Broadcast";
+            FormClosing += HandleFormClosing;
+            FormClosed += HandleFormClosed;
             statusStrip.ResumeLayout(false);
             statusStrip.PerformLayout();
             menuStrip1.ResumeLayout(false);

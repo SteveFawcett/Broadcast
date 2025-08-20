@@ -1,4 +1,5 @@
-﻿using System.Drawing.Drawing2D;
+﻿using System.Diagnostics;
+using System.Drawing.Drawing2D;
 using System.Drawing.Text;
 
 namespace Broadcast.Classes
@@ -63,6 +64,7 @@ namespace Broadcast.Classes
             }
 
             badgeY += ( 6 + BadgeHeight );
+
             if( string.IsNullOrEmpty( item.Installed ) )
                 DrawBadge(g, new Rectangle(badgeX, badgeY, BadgeWidth, BadgeHeight),
                     "Not Installed",

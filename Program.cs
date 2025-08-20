@@ -10,6 +10,7 @@ namespace Broadcast;
 
 internal static class Program
 {
+
     [STAThread]
     private static void Main()
     {
@@ -63,7 +64,6 @@ internal static class Program
         var provider = services.BuildServiceProvider();
         var registry = provider.GetRequiredService<IPluginRegistry>();
 
-
         // Resolve plugin instances via DI
         var plugins = provider.GetServices<IPlugin>();
         foreach (var plugin in plugins) registry.Add(plugin);
@@ -74,7 +74,6 @@ internal static class Program
         var mainForm = provider.GetRequiredService<MainForm>();
         Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
         Application.Run(mainForm);
-        
     }
 
     private static IEnumerable<Type> DiscoverPluginTypes(Assembly assembly)
