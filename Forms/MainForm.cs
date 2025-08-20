@@ -9,14 +9,19 @@ public partial class MainForm : Form
 {
     public delegate IEnumerable<KeyValuePair<string, string>> CacheReader(List<string> values);
 
-    private readonly ILogger<MainForm> _logger;
+    private readonly ILogger<IPlugin> _logger;
     private readonly IPluginRegistry _registry;
+    private readonly IConfiguration _configuration;
+    private readonly IPluginUpdater _updater;
 
-    public MainForm(IConfiguration configuration, ILogger<MainForm> logger, IPluginRegistry registry)
+    public ILogger Logger => _logger;
+
+    public MainForm(IConfiguration configuration, ILogger<IPlugin> logger, IPluginRegistry registry , IPluginUpdater updates)
     {
-        Configuration = configuration;
+        _configuration = configuration;
         _logger = logger;
         _registry = registry;
+        _updater = updates;
 
         InitializeComponent();
         toolStripStatusLabel.Text = Strings.PluginStarting;
@@ -24,8 +29,6 @@ public partial class MainForm : Form
         AttachToForm();
     }
 
-    public ILogger Logger => _logger;
-    public IConfiguration Configuration { get; }
 
 
     // Update the code in MainForm to use the new method:
@@ -57,7 +60,7 @@ public partial class MainForm : Form
     {
         //Logger.LogDebug("Checking for updates...");
         // TODO: FIX
-        UpdateForm updateForm = new(_registry.GetAll());
+        UpdateForm updateForm = new( _logger , _updater);
         updateForm.ShowDialog(this);
     }
 

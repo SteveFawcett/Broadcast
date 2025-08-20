@@ -39,8 +39,6 @@
 
 	<ItemGroup>
  
-    <PackageReference Include="Markdig" Version="0.41.3" />
- 
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.8" />
  
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.8" />

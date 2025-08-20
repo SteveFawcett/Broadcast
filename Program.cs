@@ -24,7 +24,7 @@ internal static class Program
         var loggerFactory = LoggerFactory.Create(builder =>
         {
             builder.AddConsole();
-            builder.SetMinimumLevel(LogLevel.Information);
+            builder.SetMinimumLevel(LogLevel.Debug);
             builder.AddDebug();
         });
 
@@ -36,6 +36,7 @@ internal static class Program
         services.AddSingleton<ILoggerFactory>(loggerFactory);
         services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
         services.AddSingleton<IPluginRegistry, PluginRegistry>();
+        services.AddSingleton<IPluginUpdater, PluginUpdater>();
         services.AddTransient<MainForm>();
 
         // Temporary startup instance to load assemblies before building provider
@@ -58,6 +59,7 @@ internal static class Program
         var provider = services.BuildServiceProvider();
         var registry = provider.GetRequiredService<IPluginRegistry>();
 
+
         // Resolve plugin instances via DI
         var plugins = provider.GetServices<IPlugin>();
         foreach (var plugin in plugins) registry.Add(plugin);
@@ -66,6 +68,7 @@ internal static class Program
         registry.AttachMasterReader();
 
         var mainForm = provider.GetRequiredService<MainForm>();
+        Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
         Application.Run(mainForm);
         
     }
