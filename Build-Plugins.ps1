@@ -8,7 +8,7 @@ foreach ($dir in $pluginDirs) {
     Push-Location $dir.FullName
 
     try {
-        dotnet build --configuration:Debug --target:Package -p:OutputDirectory="C:\Plugins\" -p:Version=0.0.0
+        dotnet build --configuration:Debug --target:Package -p:OutputDirectory="C:\Plugins\" -p:AssemblyVersion=0.0.1
     } catch {
         Write-Host "? Build failed in $($dir.Name): $_" -ForegroundColor Red
     }
