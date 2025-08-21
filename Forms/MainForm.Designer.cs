@@ -42,6 +42,7 @@
             // 
             // flowLayoutPanel1
             // 
+            flowLayoutPanel1.AutoScroll = true;
             flowLayoutPanel1.Location = new Point(7, 27);
             flowLayoutPanel1.Name = "flowLayoutPanel1";
             flowLayoutPanel1.Size = new Size(111, 433);
@@ -107,6 +108,8 @@
             MainMenuStrip = menuStrip1;
             Name = "MainForm";
             Text = "Simulator Broadcast";
+            FormClosing += HandleFormClosing;
+            FormClosed += HandleFormClosed;
             statusStrip.ResumeLayout(false);
             statusStrip.PerformLayout();
             menuStrip1.ResumeLayout(false);

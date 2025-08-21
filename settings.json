@@ -1,6 +1,7 @@
 ﻿{
   "plugindirectory": "c:\\plugins",
-  "plugins": [ "APIPlugin" ],
+  "RepositoryUrl": "https://raw.githubusercontent.com/SteveFawcett/delivery/refs/heads/main/releases.json",
+  "loglevel": "Info",
   "MSFS": {
     "server": "localhost",
     "export": "PLANE ALTITUDE  , PLANE LATITUDE, PLANE LONGITUDE"
