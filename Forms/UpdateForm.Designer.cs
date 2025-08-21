@@ -31,10 +31,12 @@ namespace Broadcast.SubForms
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(UpdateForm));
             button1 = new Button();
             listBox1 = new ListBox();
             richTextBox1 = new RichTextBox();
             linkLabel1 = new LinkLabel();
+            comboBox1 = new ComboBox();
             SuspendLayout();
             // 
             // button1
@@ -78,23 +80,37 @@ namespace Broadcast.SubForms
             linkLabel1.LinkBehavior = LinkBehavior.AlwaysUnderline;
             linkLabel1.Location = new Point(353, 415);
             linkLabel1.Name = "linkLabel1";
-            linkLabel1.Size = new Size(60, 15);
+            linkLabel1.Size = new Size(103, 15);
             linkLabel1.TabIndex = 4;
             linkLabel1.TabStop = true;
             linkLabel1.Text = "View release notes";
             linkLabel1.LinkClicked += linkLabel1_LinkClicked;
- 
+            // 
+            // comboBox1
+            // 
+            comboBox1.AllowDrop = true;
+            comboBox1.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBox1.FlatStyle = FlatStyle.Flat;
+            comboBox1.FormattingEnabled = true;
+            comboBox1.Location = new Point(700, 21);
+            comboBox1.Name = "comboBox1";
+            comboBox1.Size = new Size(88, 23);
+            comboBox1.TabIndex = 5;
+            comboBox1.DrawMode = DrawMode.OwnerDrawFixed;
+            comboBox1.DrawItem += ComboBox1_DrawItem;
             // 
             // UpdateForm
             // 
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(800, 450);
+            Controls.Add(comboBox1);
             Controls.Add(linkLabel1);
             Controls.Add(richTextBox1);
             Controls.Add(button1);
             Controls.Add(listBox1);
             FormBorderStyle = FormBorderStyle.FixedSingle;
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "UpdateForm";
             Text = "Update";
             Load += UpdateForm_Load;
@@ -107,5 +123,6 @@ namespace Broadcast.SubForms
         private ListBox listBox1;
         private RichTextBox richTextBox1;
         private LinkLabel linkLabel1;
+        private ComboBox comboBox1;
     }
 }
