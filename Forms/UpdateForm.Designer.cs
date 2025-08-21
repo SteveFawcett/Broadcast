@@ -1,4 +1,5 @@
-﻿namespace Broadcast.SubForms
+﻿
+namespace Broadcast.SubForms
 {
     partial class UpdateForm
     {
@@ -31,6 +32,9 @@
             button1 = new Button();
             panel2 = new Panel();
             listBox1 = new ListBox();
+            // Replace this line in InitializeComponent (if not already using the above using directive):
+            // webView21 = new Microsoft.Web.WebView2.WinForms.WebView2();
+            // with:
             webView21 = new Microsoft.Web.WebView2.WinForms.WebView2();
             panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)webView21).BeginInit();
@@ -89,6 +93,7 @@
             Name = "UpdateForm";
             Text = "Update";
             panel2.ResumeLayout(false);
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             ((System.ComponentModel.ISupportInitialize)webView21).EndInit();
             ResumeLayout(false);
         }
