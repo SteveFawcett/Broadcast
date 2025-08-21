@@ -1,4 +1,6 @@
 ﻿
+using System.Security.Policy;
+
 namespace Broadcast.SubForms
 {
     partial class UpdateForm
@@ -30,14 +32,9 @@ namespace Broadcast.SubForms
         private void InitializeComponent()
         {
             button1 = new Button();
-            panel2 = new Panel();
             listBox1 = new ListBox();
-            // Replace this line in InitializeComponent (if not already using the above using directive):
-            // webView21 = new Microsoft.Web.WebView2.WinForms.WebView2();
-            // with:
-            webView21 = new Microsoft.Web.WebView2.WinForms.WebView2();
-            panel2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)webView21).BeginInit();
+            richTextBox1 = new RichTextBox();
+            linkLabel1 = new LinkLabel();
             SuspendLayout();
             // 
             // button1
@@ -50,58 +47,65 @@ namespace Broadcast.SubForms
             button1.UseVisualStyleBackColor = true;
             button1.MouseClick += CloseForm;
             // 
-            // panel2
-            // 
-            panel2.BackColor = Color.White;
-            panel2.Controls.Add(listBox1);
-            panel2.Location = new Point(12, 50);
-            panel2.Name = "panel2";
-            panel2.Padding = new Padding(1);
-            panel2.Size = new Size(357, 349);
-            panel2.TabIndex = 5;
-            // 
             // listBox1
             // 
+            listBox1.BackColor = Color.White;
             listBox1.BorderStyle = BorderStyle.None;
+            listBox1.DrawMode = DrawMode.OwnerDrawFixed;
+            listBox1.Font = new Font("Segoe UI", 12F);
             listBox1.FormattingEnabled = true;
-            listBox1.ItemHeight = 15;
-            listBox1.Location = new Point(14, 15);
+            listBox1.ItemHeight = 72;
+            listBox1.Location = new Point(20, 50);
+            listBox1.Margin = new Padding(0);
             listBox1.Name = "listBox1";
-            listBox1.Size = new Size(329, 315);
+            listBox1.Size = new Size(330, 360);
             listBox1.TabIndex = 0;
+            listBox1.DrawItem += ListBox1_DrawItem;
+            listBox1.SelectedIndexChanged += ListBox1_SelectedIndexChanged;
             // 
-            // webView21
+            // richTextBox1
             // 
-            webView21.AllowExternalDrop = true;
-            webView21.BackColor = Color.White;
-            webView21.CreationProperties = null;
-            webView21.DefaultBackgroundColor = Color.White;
-            webView21.Location = new Point(385, 50);
-            webView21.Name = "webView21";
-            webView21.Size = new Size(401, 349);
-            webView21.TabIndex = 6;
-            webView21.ZoomFactor = 1D;
+            richTextBox1.BorderStyle = BorderStyle.None;
+            richTextBox1.Location = new Point(353, 50);
+            richTextBox1.Name = "richTextBox1";
+            richTextBox1.Size = new Size(435, 359);
+            richTextBox1.TabIndex = 3;
+            richTextBox1.Text = "";
+            // 
+            // linkLabel1
+            // 
+            linkLabel1.AutoSize = true;
+            linkLabel1.LinkBehavior = LinkBehavior.AlwaysUnderline;
+            linkLabel1.Location = new Point(353, 415);
+            linkLabel1.Name = "linkLabel1";
+            linkLabel1.Size = new Size(60, 15);
+            linkLabel1.TabIndex = 4;
+            linkLabel1.TabStop = true;
+            linkLabel1.Text = "View release notes";
+            linkLabel1.LinkClicked += linkLabel1_LinkClicked;
+ 
             // 
             // UpdateForm
             // 
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             ClientSize = new Size(800, 450);
-            Controls.Add(webView21);
-            Controls.Add(panel2);
+            Controls.Add(linkLabel1);
+            Controls.Add(richTextBox1);
             Controls.Add(button1);
+            Controls.Add(listBox1);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
             Name = "UpdateForm";
             Text = "Update";
-            panel2.ResumeLayout(false);
-            FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            ((System.ComponentModel.ISupportInitialize)webView21).EndInit();
+            Load += UpdateForm_Load;
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
         private Button button1;
-        private Panel panel2;
         private ListBox listBox1;
-        private Microsoft.Web.WebView2.WinForms.WebView2 webView21;
+        private RichTextBox richTextBox1;
+        private LinkLabel linkLabel1;
     }
 }
