@@ -43,7 +43,7 @@ public partial class MainForm : Form
 
             if (plugin is IProvider provider)
             {
-                _logger.LogDebug("[1] Plugin {Name} implements {provider}" , plugin.Name , nameof(IProvider) );
+                _logger.LogDebug("[1] Plugin {Name} implements {provider}", plugin.Name, nameof(IProvider));
                 provider.DataReceived += PluginControl_DataReceived;
             }
         }
@@ -71,7 +71,7 @@ public partial class MainForm : Form
             TextAlign = ContentAlignment.MiddleCenter,
             ForeColor = Color.Gray,
             Font = new Font("Segoe UI", 6, FontStyle.Regular)
-        }; 
+        };
         container.Controls.Add(label);
 
         container.MouseEnter += (s, e) => container.BackColor = Color.LightSteelBlue;
@@ -83,11 +83,12 @@ public partial class MainForm : Form
     // 🧠 Plugin Event Handlers
     public void PluginControl_Click(object? sender, EventArgs e)
     {
-        Logger.LogDebug( "PluginControl_Click {type}" , sender?.GetType().Name );
+        Logger.LogDebug("PluginControl_Click {type}", sender?.GetType().Name);
         if (sender is IPlugin plugin)
         {
             panel.Controls.Clear();
-            panel.Controls.Add(plugin.InfoPage.GetControl());
+            var page = plugin.InfoPage.GetControl();
+            panel.Controls.Add(page);
         }
     }
 
@@ -112,11 +113,20 @@ public partial class MainForm : Form
         }
     }
 
-    private void HandleFormClosed(object sender, FormClosedEventArgs e)
+    private void panel_ControlAdded(object sender, ControlEventArgs e)
     {
-        Debug.WriteLine("Form Closed");
+        Panel? p = sender as Panel;
+        if (p != null && p.Controls.Count > 0)
+        {
+            var ctrl = p.Controls[0];
+  
+            p.Size = ctrl.Size;
+
+            if ( this.Width < p.Width + flowLayoutPanel1.Width + 50 )
+            {
+                this.Width = p.Width + flowLayoutPanel1.Width + 50;
+
+            }
+        }
     }
-
-
-
 }

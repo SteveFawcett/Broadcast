@@ -31,7 +31,6 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             flowLayoutPanel1 = new FlowLayoutPanel();
             panel = new Panel();
-
             SuspendLayout();
             // 
             // flowLayoutPanel1
@@ -54,7 +53,7 @@
             panel.Name = "panel";
             panel.Size = new Size(606, 489);
             panel.TabIndex = 2;
-
+            panel.ControlAdded += panel_ControlAdded;
             // 
             // MainForm
             // 
@@ -67,9 +66,7 @@
             Name = "MainForm";
             Text = "Simulator Broadcast";
             FormClosing += HandleFormClosing;
-            FormClosed += HandleFormClosed;
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
