@@ -1,8 +1,11 @@
-using System.Diagnostics;
-using BroadcastPluginSDK;
+﻿using BroadcastPluginSDK;
 using BroadcastPluginSDK.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Drawing;
+using System.Runtime.InteropServices;
 
 namespace Broadcast.SubForms;
 
@@ -13,84 +16,99 @@ public partial class MainForm : Form
     private readonly ILogger<IPlugin> _logger;
     private readonly IPluginRegistry _registry;
     private readonly IConfiguration _configuration;
-    private readonly IPluginUpdater _updater;
 
     public ILogger Logger => _logger;
-    
-    public MainForm(IConfiguration configuration, ILogger<IPlugin> logger, IPluginRegistry registry, IPluginUpdater updates)
+
+    // Win32 API for dragging custom title bar
+
+    public MainForm(IConfiguration configuration, ILogger<IPlugin> logger, IPluginRegistry registry)
     {
         _configuration = configuration;
         _logger = logger;
         _registry = registry;
-        _updater = updates;
 
         InitializeComponent();
-        toolStripStatusLabel.Text = Strings.PluginStarting;
-
-        AttachToForm();
+        AttachPlugins();
     }
 
-    // Update the code in MainForm to use the new method:
-    public void PluginControl_Click(object? sender, EventArgs e)
+    // 🧩 Plugin UI Setup
+    public void AttachPlugins()
     {
-        Logger.LogDebug($"PluginControl_Click {sender?.GetType().Name}");
-        if (sender is IPlugin c)
+        foreach (IPlugin plugin in _registry.GetAll())
         {
-            panel.Controls.Clear();
-            panel.Controls.Add(c.InfoPage.GetControl()); // Use the GetControl method to add the Control.
+            var container = CreatePluginIconContainer(plugin.ShortName, plugin.MainIcon);
+            flowLayoutPanel1.Controls.Add(container);
+
+            plugin.Click += PluginControl_Click;
+
+            if (plugin is IProvider provider)
+            {
+                _logger.LogDebug("[1] Plugin {Name} implements {provider}" , plugin.Name , nameof(IProvider) );
+                provider.DataReceived += PluginControl_DataReceived;
+            }
         }
     }
 
-    internal void PluginControl_Hover(object? sender, EventArgs e)
+    private Panel CreatePluginIconContainer(string name, BroadcastPluginSDK.Classes.MainIcon icon)
     {
-        if (sender is IPlugin c) toolStripStatusLabel.Text = $"{c.Name}";
+        icon.Size = new Size((int)(flowLayoutPanel1.Width * 0.65),
+                             (int)(flowLayoutPanel1.Width * 0.65));
+        icon.Location = new Point(5, 5);
+
+        var container = new Panel
+        {
+            Size = new Size(icon.Width + 10, icon.Height + 30),
+            Margin = new Padding(5),
+            BackColor = Color.White,
+            BorderStyle = BorderStyle.FixedSingle
+        };
+        container.Controls.Add(icon);
+
+        var label = new Label
+        {
+            Text = name,
+            Dock = DockStyle.Bottom,
+            TextAlign = ContentAlignment.MiddleCenter,
+            ForeColor = Color.Gray,
+            Font = new Font("Segoe UI", 6, FontStyle.Regular)
+        }; 
+        container.Controls.Add(label);
+
+        container.MouseEnter += (s, e) => container.BackColor = Color.LightSteelBlue;
+        container.MouseLeave += (s, e) => container.BackColor = Color.White;
+
+        return container;
+    }
+
+    // 🧠 Plugin Event Handlers
+    public void PluginControl_Click(object? sender, EventArgs e)
+    {
+        Logger.LogDebug( "PluginControl_Click {type}" , sender?.GetType().Name );
+        if (sender is IPlugin plugin)
+        {
+            panel.Controls.Clear();
+            panel.Controls.Add(plugin.InfoPage.GetControl());
+        }
     }
 
     internal void PluginControl_DataReceived(object? sender, Dictionary<string, string> e)
     {
         foreach (var plugin in _registry.Caches() ?? [])
         {
-            if (plugin is ICache c) c.Write(e);
+            if (plugin is ICache cache)
+                cache.Write(e);
         }
     }
 
-    private void CheckForUpdates(object sender, EventArgs e)
-    {
-        UpdateForm updateForm = new(_logger, _updater);
-        updateForm.ShowDialog(this);
-    }
-
-    public void AttachToForm()
-    {
-        foreach (var plugin in _registry.GetAll())
-        {
-            var icon = plugin.MainIcon;
-            icon.Size = new Size((int)(flowLayoutPanel1.Width * 0.8),
-                                 (int)(flowLayoutPanel1.Width * 0.8));
-            flowLayoutPanel1.Controls.Add(icon);
-            plugin.Click += PluginControl_Click;
-            plugin.MouseHover += PluginControl_Hover;
-
-            if (plugin is IProvider provider)
-            {
-                _logger.LogDebug($"[1] Plugin {plugin.Name} implements {nameof(IProvider)}");
-                provider.DataReceived += PluginControl_DataReceived;
-            }
-        }
-    }
-
+    // 🧹 Cleanup
     private void HandleFormClosing(object sender, FormClosingEventArgs e)
     {
         foreach (var plugin in _registry.GetAll())
         {
             plugin.Click -= PluginControl_Click;
-            plugin.MouseHover -= PluginControl_Hover;
 
             if (plugin is IProvider provider)
-            {
                 provider.DataReceived -= PluginControl_DataReceived;
-            }
-
         }
     }
 
@@ -98,4 +116,7 @@ public partial class MainForm : Form
     {
         Debug.WriteLine("Form Closed");
     }
+
+
+
 }

@@ -21,7 +21,6 @@ public partial class StartUp : Form, IStartup
     private readonly IConfiguration _configuration;
     private readonly ILogger _logger;
     private readonly IPluginRegistry? _registry;
-    private readonly IPluginUpdater? _updater;
 
     public StartUp(IConfiguration configuration, ILogger logger)
     {
@@ -32,12 +31,11 @@ public partial class StartUp : Form, IStartup
         InitializeComponent();
     }
 
-    public StartUp(IConfiguration configuration, ILogger logger, IPluginRegistry registry, IPluginUpdater? updater)
+    public StartUp(IConfiguration configuration, ILogger logger, IPluginRegistry registry)
     {
         _configuration = configuration;
         _logger = logger;
         _registry = registry;
-        _updater = updater;
 
         InitializeComponent();
 

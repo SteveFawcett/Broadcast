@@ -41,7 +41,6 @@ internal static class Program
         services.AddSingleton<ILoggerFactory>(loggerFactory);
         services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
         services.AddSingleton<IPluginRegistry, PluginRegistry>();
-        services.AddSingleton<IPluginUpdater, PluginUpdater>();
         services.AddTransient<MainForm>();
 
         // Temporary startup instance to load assemblies before building provider
