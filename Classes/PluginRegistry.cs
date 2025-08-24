@@ -23,12 +23,25 @@ public class PluginRegistry : IPluginRegistry
         var plugin = _plugins.FirstOrDefault(p => p.ShortName.Equals(shortname, StringComparison.OrdinalIgnoreCase));
         if (plugin != null)
         {
-            _logger.LogDebug($"Searching (Found) for plugin with shortname: {shortname}");
+            _logger.LogDebug("Searching (Found) for plugin with shortname: {shortname}", shortname);
             return plugin;
         }
-        _logger.LogDebug($"Searching (Not Found) for plugin with shortname: {shortname}");
+        _logger.LogDebug("Searching (Not Found) for plugin with shortname: {shortname}" ,shortname);
         return null;
     }
+
+    public IPlugin? Get(string shortname , string version )
+    {
+        var plugin = _plugins.FirstOrDefault(p => p.ShortName.Equals(shortname, StringComparison.OrdinalIgnoreCase) && p.Version == version );
+        if (plugin != null)
+        {
+            _logger.LogDebug("Searching (Found) for plugin with shortname: {shortname} / {version} " , shortname , version);
+            return plugin;
+        }
+        _logger.LogDebug("Searching (Not Found) for plugin with shortname: {shortname} / {version}" , shortname , version);
+        return null;
+    }
+
     public void Add(IPlugin plugin)
     {
         _logger.LogDebug($"Adding plugin to registry: {plugin.ShortName} (Version: {plugin.Version})");
