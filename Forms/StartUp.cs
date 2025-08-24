@@ -138,8 +138,6 @@ public class PluginLoadContext : AssemblyLoadContext
         return LoadFromStream(stream);
     }
 }
-
-
 public static class WinFormsExtensions
 {
     public static void AppendLine(this TextBox source, string value)
