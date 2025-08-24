@@ -8,8 +8,6 @@ namespace Broadcast.Classes;
 
 public class PluginRegistry : IPluginRegistry 
 {
-    //   public IEnumerable<PluginInfo> GetPluginInfo() =>
-    //       _plugins.Select(p => new PluginInfo(p.Name, p.Version, p.FilePath, p.Description, p.RepositoryUrl));
 
     private readonly List<IPlugin> _plugins = new();
 
