@@ -1,11 +1,11 @@
-﻿using System.Diagnostics;
-using System.IO.Compression;
-using System.Reflection;
-using BroadcastPluginSDK;
-using BroadcastPluginSDK.abstracts;
+﻿
 using BroadcastPluginSDK.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
+using System.IO.Compression;
+using System.Reflection;
+using System.Runtime.Loader;
 
 namespace Broadcast.SubForms;
 
@@ -119,7 +119,8 @@ public partial class StartUp : Form, IStartup
 
         foreach (var dllBytes in dllBytesList)
         {
-            var assembly = Assembly.Load(dllBytes);
+            var context = new PluginLoadContext();
+            var assembly = context.LoadFromBytes(dllBytes);
             assemblies.Add(assembly);
         }
 
@@ -127,6 +128,16 @@ public partial class StartUp : Form, IStartup
     }
 }
 
+public class PluginLoadContext : AssemblyLoadContext
+{
+    public PluginLoadContext() : base(isCollectible: true) { }
+
+    public Assembly LoadFromBytes(byte[] dllBytes)
+    {
+        using var stream = new MemoryStream(dllBytes);
+        return LoadFromStream(stream);
+    }
+}
 public static class WinFormsExtensions
 {
     public static void AppendLine(this TextBox source, string value)

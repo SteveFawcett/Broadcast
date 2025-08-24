@@ -1,6 +1,6 @@
 using System.Reflection;
 using Broadcast.SubForms;
-using BroadcastPluginSDK.Classes;
+using Broadcast.Classes;
 using BroadcastPluginSDK.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,6 +52,7 @@ internal static class Program
         // Discover and register plugin types before building provider
         foreach (var assembly in assemblies)
         {
+
             foreach (var pluginType in DiscoverPluginTypes(assembly))
             {
                 logger.LogInformation($"Registering plugin: {pluginType.FullName}");
