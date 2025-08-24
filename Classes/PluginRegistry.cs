@@ -6,8 +6,6 @@ using System.Runtime.Loader;
 
 namespace Broadcast.Classes;
 
-
-
 public class PluginRegistry : IPluginRegistry 
 {
     //   public IEnumerable<PluginInfo> GetPluginInfo() =>
