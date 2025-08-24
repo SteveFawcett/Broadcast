@@ -21,16 +21,25 @@ public class PluginRegistry : IPluginRegistry
         _logger = logger;
         _logger.LogInformation("PluginRegistry initialized.");
     }
+
+    public IPlugin? Get(string shortname)
+    {
+        var plugin = _plugins.FirstOrDefault(p => p.ShortName.Equals(shortname, StringComparison.OrdinalIgnoreCase));
+        if (plugin != null)
+        {
+            _logger.LogDebug($"Searching (Found) for plugin with shortname: {shortname}");
+            return plugin;
+        }
+        _logger.LogDebug($"Searching (Not Found) for plugin with shortname: {shortname}");
+        return null;
+    }
     public void Add(IPlugin plugin)
     {
-        _logger.LogInformation($"Adding plugin to registry: {plugin.ShortName} (Version: {plugin.Version})");
+        _logger.LogDebug($"Adding plugin to registry: {plugin.ShortName} (Version: {plugin.Version})");
         _plugins.Add(plugin);
     }
 
-    public IReadOnlyList<IPlugin> GetAll()
-    {
-        return _plugins;
-    }
+    public IReadOnlyList<IPlugin> GetAll() => _plugins.AsReadOnly();
 
     public ICache? MasterCache()
     {
