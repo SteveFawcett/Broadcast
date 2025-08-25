@@ -15,8 +15,10 @@ internal static class Program
     private static void Main()
     {
         // Build configuration
+        string pluginPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Broadcast\";
+
         var builder = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
+            .SetBasePath( pluginPath )
             .AddJsonFile("settings.json", true, true)
             .AddEnvironmentVariables();
 

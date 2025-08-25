@@ -17,6 +17,7 @@ public class PluginRegistry : IPluginRegistry
         _logger = logger;
         _logger.LogInformation("PluginRegistry initialized.");
     }
+    public bool Restart { get; set; } = false;
 
     public IPlugin? Get(string shortname)
     {

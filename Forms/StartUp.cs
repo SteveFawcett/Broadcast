@@ -38,7 +38,6 @@ public partial class StartUp : Form, IStartup
         _registry = registry;
 
         InitializeComponent();
-
     }
 
     public void AddText(string message)
@@ -51,7 +50,7 @@ public partial class StartUp : Form, IStartup
     {
         List<Assembly> assemblies = [];
 
-        var directory = _configuration["plugindirectory"] ?? AppDomain.CurrentDomain.BaseDirectory;
+        string directory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Broadcast\plugins";
 
         AddText($"Using plugin directory: {directory}");
 

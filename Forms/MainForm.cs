@@ -39,13 +39,30 @@ public partial class MainForm : Form
             var container = CreatePluginIconContainer(plugin.ShortName, plugin.MainIcon);
             flowLayoutPanel1.Controls.Add(container);
 
+            _logger.LogInformation("Attaching plugin {Name}", plugin.Name);
             plugin.Click += PluginControl_Click;
 
             if (plugin is IProvider provider)
             {
-                _logger.LogDebug("[1] Plugin {Name} implements {provider}", plugin.Name, nameof(IProvider));
+                _logger.LogDebug("Plugin {Name} implements {provider}", plugin.Name, nameof(IProvider));
                 provider.DataReceived += PluginControl_DataReceived;
             }
+
+            if (plugin is IManager manager)
+            {
+                _logger.LogDebug("Plugin {Name} implements {Interface}", plugin.Name, nameof(IManager));
+                manager.TriggerRestart += PluginControl_Restart;
+            }
+        }
+    }
+
+    private void PluginControl_Restart(object? sender, bool e)
+    {
+        if ( _registry.Restart || e  )
+        {
+            _logger.LogInformation("Restarting application as requested by plugin {plugin}", sender?.GetType().Name);
+            Application.Restart();
+            Environment.Exit(0);
         }
     }
 
