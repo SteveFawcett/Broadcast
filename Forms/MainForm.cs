@@ -1,4 +1,5 @@
-﻿using BroadcastPluginSDK;
+﻿using Broadcast.Classes;
+using BroadcastPluginSDK;
 using BroadcastPluginSDK.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,7 @@ public partial class MainForm : Form
 
     private readonly ILogger<IPlugin> _logger;
     private readonly IPluginRegistry _registry;
+    private readonly ILocalConfigurationManager _localConfigManager;
     private readonly IConfiguration _configuration;
     ContextMenuStrip contextMenu = new ContextMenuStrip();
 
@@ -22,9 +24,10 @@ public partial class MainForm : Form
 
     // Win32 API for dragging custom title bar
 
-    public MainForm(IConfiguration configuration, ILogger<IPlugin> logger, IPluginRegistry registry)
+    public MainForm(IConfiguration configuration, ILogger<IPlugin> logger, IPluginRegistry registry , ILocalConfigurationManager localConfigurationManager)
     {
         _configuration = configuration;
+        _localConfigManager = localConfigurationManager;
         _logger = logger;
         _registry = registry;
 
@@ -55,8 +58,16 @@ public partial class MainForm : Form
                 _logger.LogDebug("Plugin {Name} implements {Interface}", plugin.Name, nameof(IManager));
                 manager.TriggerRestart += PluginControl_Restart;
                 manager.ShowScreen += Plugin_ShowScreen;
+                manager.WriteConfiguration += Plugin_WriteConfiguration;
             }
         }
+    }
+
+    private void Plugin_WriteConfiguration(object? sender, EventArgs e)
+    {
+        _logger.LogInformation("Plugin {plugin} requested to write configuration", sender?.GetType().Name);
+        _localConfigManager.Save();
+        _registry.Restart = true;
     }
 
     private void Plugin_ShowScreen(object? sender, UserControl e)

@@ -38,9 +38,11 @@ internal static class Program
         var logger = loggerFactory.CreateLogger("MSFS");
         logger.LogInformation("Application starting...");
 
+
         // Setup DI container
         var services = new ServiceCollection();
         services.AddSingleton(configuration);
+        services.AddSingleton<ILocalConfigurationManager, LocalConfigurationManager>() ;
         services.AddSingleton<ILoggerFactory>(loggerFactory);
         services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
         services.AddSingleton<IPluginRegistry, PluginRegistry>();

@@ -3,7 +3,9 @@
   "loglevel": "Info",
   "MSFS": {
     "server": "localhost",
-    "export": "PLANE ALTITUDE  , PLANE LATITUDE, PLANE LONGITUDE"
+    "export": ["PLANE ALTITUDE",
+               "PLANE LATITUDE", 
+               "PLANE LONGITUDE" ]
   },
   "Redis": {
     "server": "controller.local",
