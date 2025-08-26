@@ -55,7 +55,7 @@ internal static class Program
         logger.LogInformation("Discover and register plugin types before building provider");
         foreach (var assembly in assemblies)
         {
-            logger.LogInformation($"Scanning assembly: {assembly.FullName}");
+            logger.LogDebug($"Scanning assembly: {assembly.FullName}");
             try
             {
                 foreach (var pluginType in DiscoverPluginTypes(assembly))
