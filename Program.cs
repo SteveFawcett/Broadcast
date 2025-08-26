@@ -36,6 +36,7 @@ internal static class Program
         });
 
         var logger = loggerFactory.CreateLogger("MSFS");
+        logger.LogInformation("Application starting...");
 
         // Setup DI container
         var services = new ServiceCollection();
@@ -51,14 +52,35 @@ internal static class Program
 
         var assemblies = tempStartup.LoadAssemblies();
 
-        // Discover and register plugin types before building provider
+        logger.LogInformation("Discover and register plugin types before building provider");
         foreach (var assembly in assemblies)
         {
-
-            foreach (var pluginType in DiscoverPluginTypes(assembly))
+            logger.LogInformation($"Scanning assembly: {assembly.FullName}");
+            try
             {
-                logger.LogInformation($"Registering plugin: {pluginType.FullName}");
-                services.AddTransient(typeof(IPlugin), pluginType);
+                foreach (var pluginType in DiscoverPluginTypes(assembly))
+                {
+                    try
+                    {
+                        logger.LogInformation($"Registering plugin: {pluginType.FullName}");
+                        services.AddTransient(typeof(IPlugin), pluginType);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, $"Failed to register plugin type: {pluginType.FullName}");
+                    }
+                }
+            }
+            catch (ReflectionTypeLoadException rtle)
+            {
+                foreach (var loaderException in rtle.LoaderExceptions)
+                {
+                    logger.LogError(loaderException, $"Loader exception in assembly: {assembly.FullName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Failed to scan assembly: {assembly.FullName}");
             }
         }
 

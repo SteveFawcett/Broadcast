@@ -63,6 +63,7 @@ public partial class StartUp : Form, IStartup
             SetupAssemblyResolver(loadedAssemblies);
 
             assemblies.AddRange(loadedAssemblies);
+            _logger.LogDebug($"Loaded {loadedAssemblies.Count} assemblies from {Path.GetFileName(zipPath)}");
         }
 
         return assemblies;
@@ -129,7 +130,7 @@ public partial class StartUp : Form, IStartup
 
 public class PluginLoadContext : AssemblyLoadContext
 {
-    public PluginLoadContext() : base(isCollectible: true) { }
+    public PluginLoadContext() : base(isCollectible: false) { }
 
     public Assembly LoadFromBytes(byte[] dllBytes)
     {
