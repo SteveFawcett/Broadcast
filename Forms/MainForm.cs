@@ -16,6 +16,7 @@ public partial class MainForm : Form
     private readonly ILogger<IPlugin> _logger;
     private readonly IPluginRegistry _registry;
     private readonly IConfiguration _configuration;
+    ContextMenuStrip contextMenu = new ContextMenuStrip();
 
     public ILogger Logger => _logger;
 
@@ -41,6 +42,7 @@ public partial class MainForm : Form
 
             _logger.LogInformation("Attaching plugin {Name}", plugin.Name);
             plugin.Click += PluginControl_Click;
+            
 
             if (plugin is IProvider provider)
             {
@@ -52,8 +54,18 @@ public partial class MainForm : Form
             {
                 _logger.LogDebug("Plugin {Name} implements {Interface}", plugin.Name, nameof(IManager));
                 manager.TriggerRestart += PluginControl_Restart;
+                manager.ShowScreen += Plugin_ShowScreen;
             }
         }
+    }
+
+    private void Plugin_ShowScreen(object? sender, UserControl e)
+    {
+        _logger.LogInformation("Plugin {plugin} requested to show custom screen", sender?.GetType().Name);
+
+        panel.Controls.Clear();
+        panel.Controls.Add(e);
+        Width = e.Width + flowLayoutPanel1.Width + 50;  
     }
 
     private void PluginControl_Restart(object? sender, bool e)
@@ -110,6 +122,21 @@ public partial class MainForm : Form
                 panel.Controls.Clear();
                 var page = plugin.InfoPage.GetControl();
                 panel.Controls.Add(page);
+            }
+        }
+        else if (me.Button == MouseButtons.Right)
+        {
+            if (sender is IManager plugin)
+            {
+                contextMenu.Items.Clear();
+
+                var menuItems = plugin.ContextMenuItems;
+
+                if (menuItems != null && menuItems.Any())
+                {
+                    contextMenu.Items.AddRange(menuItems.ToArray());
+                    contextMenu.Show(Cursor.Position);
+                }
             }
         }
     }
