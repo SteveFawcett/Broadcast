@@ -98,14 +98,19 @@ public partial class MainForm : Form
     }
 
     // 🧠 Plugin Event Handlers
-    public void PluginControl_Click(object? sender, EventArgs e)
-    {
-        Logger.LogDebug("PluginControl_Click {type}", sender?.GetType().Name);
-        if (sender is IPlugin plugin)
+    public void PluginControl_Click(object? sender, MouseEventArgs e)
+    { 
+        MouseEventArgs me = e ?? new MouseEventArgs(MouseButtons.Left, 1, 0, 0, 0);
+        Logger.LogDebug("PluginControl_Click type: {type} arguments: {arguments} Button: {button}", sender?.GetType().Name, e.GetType().Name , me.Button);
+
+        if (me.Button == MouseButtons.Left)
         {
-            panel.Controls.Clear();
-            var page = plugin.InfoPage.GetControl();
-            panel.Controls.Add(page);
+            if (sender is IPlugin plugin)
+            {
+                panel.Controls.Clear();
+                var page = plugin.InfoPage.GetControl();
+                panel.Controls.Add(page);
+            }
         }
     }
 
