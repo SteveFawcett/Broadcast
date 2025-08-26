@@ -29,6 +29,7 @@ public partial class StartUp : Form, IStartup
         _registry = null;
 
         InitializeComponent();
+        defaultConfiguration();
     }
 
     public StartUp(IConfiguration configuration, ILogger logger, IPluginRegistry registry)
@@ -38,8 +39,21 @@ public partial class StartUp : Form, IStartup
         _registry = registry;
 
         InitializeComponent();
+        defaultConfiguration();
     }
 
+    private void defaultConfiguration()
+    {
+        if (_configuration == null) return;
+
+        var installPath = _configuration["InstallPath"];
+
+        if (string.IsNullOrEmpty(installPath))
+        {
+            installPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "broadcast", "plugins");
+            _configuration["PluginInstallPath"] = installPath;
+        }
+    }
     public void AddText(string message)
     {
         textBox.AppendLine(message);
@@ -50,7 +64,7 @@ public partial class StartUp : Form, IStartup
     {
         List<Assembly> assemblies = [];
 
-        string directory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Broadcast\plugins";
+        string directory = _configuration["PluginInstallPath"] ?? string.Empty;
 
         AddText($"Using plugin directory: {directory}");
 
