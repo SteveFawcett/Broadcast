@@ -47,7 +47,7 @@ namespace Broadcast.Classes
 
             foreach( IPlugin p in _registry.GetAll() )
             {
-                if( string.IsNullOrEmpty(p.Stanza) ) continue;
+                if( string.IsNullOrEmpty( p.Stanza) ) continue;
 
                 _logger.LogInformation("Getting {Stanza} keys for plugin {Name}", p.Stanza , p.Name);
                 keys.Add(p.Stanza);
