@@ -13,7 +13,6 @@ public interface IStartup
 {
     public IEnumerable<Assembly> LoadAssemblies();
     public void Hide();
-    public void AddText(string message);
 }
 
 public partial class StartUp : Form, IStartup
@@ -54,7 +53,7 @@ public partial class StartUp : Form, IStartup
             _configuration["PluginInstallPath"] = installPath;
         }
     }
-    public void AddText(string message)
+    public static void AddText(string message)
     {
         textBox.AppendLine(message);
         Debug.WriteLine(message);
@@ -70,14 +69,14 @@ public partial class StartUp : Form, IStartup
 
         foreach (var zipPath in Directory.GetFiles(directory, "*.zip"))
         {
-            AddText($"Looking for plugin zip at {zipPath}");
+            AddText($"Found plugin zip at {zipPath}");
 
             var dllBytesList = ExtractDllsFromZip(zipPath);
             var loadedAssemblies = LoadAssembliesFromBytes(dllBytesList);
             SetupAssemblyResolver(loadedAssemblies);
 
             assemblies.AddRange(loadedAssemblies);
-            _logger.LogDebug($"Loaded {loadedAssemblies.Count} assemblies from {Path.GetFileName(zipPath)}");
+            AddText($"Loaded {loadedAssemblies.Count} assemblies from {Path.GetFileName(zipPath)}");
         }
 
         return assemblies;
@@ -135,6 +134,7 @@ public partial class StartUp : Form, IStartup
         {
             var context = new PluginLoadContext();
             var assembly = context.LoadFromBytes(dllBytes);
+
             assemblies.Add(assembly);
         }
 

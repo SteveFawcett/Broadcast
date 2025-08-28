@@ -78,6 +78,6 @@
         #endregion
 
         private PictureBox pictureBox1;
-        private TextBox textBox;
+        private static TextBox textBox;
     }
 }

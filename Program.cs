@@ -54,7 +54,7 @@ internal static class Program
 
         var assemblies = tempStartup.LoadAssemblies();
 
-        logger.LogInformation("Discover and register plugin types before building provider");
+        StartUp.AddText("Discover and register plugin types before building provider");
         foreach (var assembly in assemblies)
         {
             logger.LogDebug($"Scanning assembly: {assembly.FullName}");
@@ -64,7 +64,7 @@ internal static class Program
                 {
                     try
                     {
-                        logger.LogInformation($"Registering plugin: {pluginType.FullName}");
+                        StartUp.AddText($"Registering plugin: {pluginType.FullName}");
                         services.AddTransient(typeof(IPlugin), pluginType);
                     }
                     catch (Exception ex)

@@ -1,12 +1,7 @@
 ﻿using Broadcast.Classes;
-using BroadcastPluginSDK;
 using BroadcastPluginSDK.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Drawing;
-using System.Runtime.InteropServices;
 
 namespace Broadcast.SubForms;
 
@@ -124,7 +119,8 @@ public partial class MainForm : Form
     public void PluginControl_Click(object? sender, MouseEventArgs e)
     { 
         MouseEventArgs me = e ?? new MouseEventArgs(MouseButtons.Left, 1, 0, 0, 0);
-        Logger.LogDebug("PluginControl_Click type: {type} arguments: {arguments} Button: {button}", sender?.GetType().Name, e.GetType().Name , me.Button);
+
+        Logger.LogDebug("PluginControl_Click type: {type} arguments: {arguments} Button: {button}", sender?.GetType().Name, me.GetType().Name , me.Button);
 
         if (me.Button == MouseButtons.Left)
         {
@@ -164,15 +160,48 @@ public partial class MainForm : Form
     // 🧹 Cleanup
     private void HandleFormClosing(object sender, FormClosingEventArgs e)
     {
+        List<IManager> managers = new List<IManager>();
+
         foreach (var plugin in _registry.GetAll())
         {
-            plugin.Click -= PluginControl_Click;
+             plugin.Click -= PluginControl_Click;
 
             if (plugin is IProvider provider)
                 provider.DataReceived -= PluginControl_DataReceived;
+
+            if (plugin is IManager manager)
+            {
+                if (manager.Locked)
+                {
+                    managers.Add(manager);
+                }
+            }
+
+            if (managers.Count > 0)
+            {
+                e.Cancel = CloseWarning( managers ); ;
+                return;
+            }
         }
     }
 
+    private bool CloseWarning( List<IManager> managers )
+    {
+        using (var myDialog = new WaitForm( managers ))
+        {
+            var result = myDialog.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                // User confirmed
+                return true;
+            }
+            else
+            {
+                // User cancelled or closed
+                return false;
+            }
+        }
+    }
     private void panel_ControlAdded(object sender, ControlEventArgs e)
     {
         Panel? p = sender as Panel;
