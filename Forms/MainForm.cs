@@ -180,7 +180,7 @@ public partial class MainForm : Form
 
             if (managers.Count > 0)
             {
-                e.Cancel = CloseWarning( managers ); ;
+                e.Cancel = CloseWarning( managers );
                 return;
             }
         }
