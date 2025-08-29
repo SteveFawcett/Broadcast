@@ -1,11 +1,7 @@
-﻿using BroadcastPluginSDK;
+﻿using Broadcast.Classes;
 using BroadcastPluginSDK.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Drawing;
-using System.Runtime.InteropServices;
 
 namespace Broadcast.SubForms;
 
@@ -15,15 +11,18 @@ public partial class MainForm : Form
 
     private readonly ILogger<IPlugin> _logger;
     private readonly IPluginRegistry _registry;
+    private readonly ILocalConfigurationManager _localConfigManager;
     private readonly IConfiguration _configuration;
+    ContextMenuStrip contextMenu = new ContextMenuStrip();
 
     public ILogger Logger => _logger;
 
     // Win32 API for dragging custom title bar
 
-    public MainForm(IConfiguration configuration, ILogger<IPlugin> logger, IPluginRegistry registry)
+    public MainForm(IConfiguration configuration, ILogger<IPlugin> logger, IPluginRegistry registry , ILocalConfigurationManager localConfigurationManager)
     {
         _configuration = configuration;
+        _localConfigManager = localConfigurationManager;
         _logger = logger;
         _registry = registry;
 
@@ -34,14 +33,16 @@ public partial class MainForm : Form
     // 🧩 Plugin UI Setup
     public void AttachPlugins()
     {
+        _logger.LogInformation("Attaching plugins to UI");
+
         foreach (IPlugin plugin in _registry.GetAll())
         {
+            _logger.LogInformation("Setting up plugin {Name}", plugin.Name);
+
             var container = CreatePluginIconContainer(plugin.ShortName, plugin.MainIcon);
             flowLayoutPanel1.Controls.Add(container);
-
-            _logger.LogInformation("Attaching plugin {Name}", plugin.Name);
             plugin.Click += PluginControl_Click;
-
+            
             if (plugin is IProvider provider)
             {
                 _logger.LogDebug("Plugin {Name} implements {provider}", plugin.Name, nameof(IProvider));
@@ -52,8 +53,26 @@ public partial class MainForm : Form
             {
                 _logger.LogDebug("Plugin {Name} implements {Interface}", plugin.Name, nameof(IManager));
                 manager.TriggerRestart += PluginControl_Restart;
+                manager.ShowScreen += Plugin_ShowScreen;
+                manager.WriteConfiguration += Plugin_WriteConfiguration;
             }
         }
+    }
+
+    private void Plugin_WriteConfiguration(object? sender, EventArgs e)
+    {
+        _logger.LogInformation("Plugin {plugin} requested to write configuration", sender?.GetType().Name);
+        _localConfigManager.Save();
+        _registry.Restart = true;
+    }
+
+    private void Plugin_ShowScreen(object? sender, UserControl e)
+    {
+        _logger.LogInformation("Plugin {plugin} requested to show custom screen", sender?.GetType().Name);
+
+        panel.Controls.Clear();
+        panel.Controls.Add(e);
+        Width = e.Width + flowLayoutPanel1.Width + 50;  
     }
 
     private void PluginControl_Restart(object? sender, bool e)
@@ -98,14 +117,35 @@ public partial class MainForm : Form
     }
 
     // 🧠 Plugin Event Handlers
-    public void PluginControl_Click(object? sender, EventArgs e)
-    {
-        Logger.LogDebug("PluginControl_Click {type}", sender?.GetType().Name);
-        if (sender is IPlugin plugin)
+    public void PluginControl_Click(object? sender, MouseEventArgs e)
+    { 
+        MouseEventArgs me = e ?? new MouseEventArgs(MouseButtons.Left, 1, 0, 0, 0);
+
+        Logger.LogDebug("PluginControl_Click type: {type} arguments: {arguments} Button: {button}", sender?.GetType().Name, me.GetType().Name , me.Button);
+
+        if (me.Button == MouseButtons.Left)
         {
-            panel.Controls.Clear();
-            var page = plugin.InfoPage.GetControl();
-            panel.Controls.Add(page);
+            if (sender is IPlugin plugin)
+            {
+                panel.Controls.Clear();
+                var page = plugin.InfoPage.GetControl();
+                panel.Controls.Add(page);
+            }
+        }
+        else if (me.Button == MouseButtons.Right)
+        {
+            if (sender is IManager plugin)
+            {
+                contextMenu.Items.Clear();
+
+                var menuItems = plugin.ContextMenuItems;
+
+                if (menuItems != null && menuItems.Any())
+                {
+                    contextMenu.Items.AddRange(menuItems.ToArray());
+                    contextMenu.Show(Cursor.Position);
+                }
+            }
         }
     }
 
@@ -121,15 +161,48 @@ public partial class MainForm : Form
     // 🧹 Cleanup
     private void HandleFormClosing(object sender, FormClosingEventArgs e)
     {
+        List<IManager> managers = new List<IManager>();
+
         foreach (var plugin in _registry.GetAll())
         {
-            plugin.Click -= PluginControl_Click;
+             plugin.Click -= PluginControl_Click;
 
             if (plugin is IProvider provider)
                 provider.DataReceived -= PluginControl_DataReceived;
+
+            if (plugin is IManager manager)
+            {
+                if (manager.Locked)
+                {
+                    managers.Add(manager);
+                }
+            }
+
+            if (managers.Count > 0)
+            {
+                e.Cancel = CloseWarning( managers );
+                return;
+            }
         }
     }
 
+    private bool CloseWarning( List<IManager> managers )
+    {
+        using (var myDialog = new WaitForm( managers ))
+        {
+            var result = myDialog.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                // User confirmed
+                return true;
+            }
+            else
+            {
+                // User cancelled or closed
+                return false;
+            }
+        }
+    }
     private void panel_ControlAdded(object sender, ControlEventArgs e)
     {
         Panel? p = sender as Panel;

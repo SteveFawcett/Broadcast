@@ -6,11 +6,20 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Platforms>AnyCPU;x86;x64</Platforms>
-    <ApplicationIcon>Resources\airplane.ico</ApplicationIcon>
+    <Platforms>x64</Platforms>
+	  <PlatformTarget>x64</PlatformTarget>
+	  <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	  <Prefer32Bit>false</Prefer32Bit>
+
+	  <ApplicationIcon>Resources\airplane.ico</ApplicationIcon>
     <PackageIcon>airplane.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <StartupObject>Broadcast.Program</StartupObject>
+	  <SelfContained>true</SelfContained>
+
+	  <PublishSingleFile>true</PublishSingleFile>
+
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,7 +44,7 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(Configuration)' == 'Release'">
-		<PackageReference Include="BroadcastPluginSDK" Version="1.0.17" />
+		<PackageReference Include="BroadcastPluginSDK" Version="1.1.1" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -13,7 +13,6 @@ public interface IStartup
 {
     public IEnumerable<Assembly> LoadAssemblies();
     public void Hide();
-    public void AddText(string message);
 }
 
 public partial class StartUp : Form, IStartup
@@ -29,6 +28,7 @@ public partial class StartUp : Form, IStartup
         _registry = null;
 
         InitializeComponent();
+        defaultConfiguration();
     }
 
     public StartUp(IConfiguration configuration, ILogger logger, IPluginRegistry registry)
@@ -38,9 +38,22 @@ public partial class StartUp : Form, IStartup
         _registry = registry;
 
         InitializeComponent();
+        defaultConfiguration();
     }
 
-    public void AddText(string message)
+    private void defaultConfiguration()
+    {
+        if (_configuration == null) return;
+
+        var installPath = _configuration["InstallPath"];
+
+        if (string.IsNullOrEmpty(installPath))
+        {
+            installPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "broadcast", "plugins");
+            _configuration["PluginInstallPath"] = installPath;
+        }
+    }
+    public static void AddText(string message)
     {
         textBox.AppendLine(message);
         Debug.WriteLine(message);
@@ -50,20 +63,29 @@ public partial class StartUp : Form, IStartup
     {
         List<Assembly> assemblies = [];
 
-        string directory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\Broadcast\plugins";
+        string directory = _configuration["PluginInstallPath"] ?? string.Empty;
 
         AddText($"Using plugin directory: {directory}");
 
         foreach (var zipPath in Directory.GetFiles(directory, "*.zip"))
         {
-            AddText($"Looking for plugin zip at {zipPath}");
+            AddText($"Found plugin zip at {zipPath}");
 
             var dllBytesList = ExtractDllsFromZip(zipPath);
-            var loadedAssemblies = LoadAssembliesFromBytes(dllBytesList);
-            SetupAssemblyResolver(loadedAssemblies);
+            try
+            {
+                var loadedAssemblies = LoadAssembliesFromBytes(dllBytesList , Path.GetFileName(zipPath));
+                SetupAssemblyResolver(loadedAssemblies);
 
-            assemblies.AddRange(loadedAssemblies);
-            _logger.LogDebug($"Loaded {loadedAssemblies.Count} assemblies from {Path.GetFileName(zipPath)}");
+                assemblies.AddRange(loadedAssemblies);
+                AddText($"Loaded {loadedAssemblies.Count} assemblies from {Path.GetFileName(zipPath)}");
+            }
+            catch (Exception ex)
+            {
+                AddText($"Failed to load assemblies from {Path.GetFileName(zipPath)}");
+                _logger.LogError(ex, $"Failed to load assemblies from {Path.GetFileName(zipPath)}");
+            }
+
         }
 
         return assemblies;
@@ -113,17 +135,25 @@ public partial class StartUp : Form, IStartup
         return dllBytesList;
     }
 
-    private static List<Assembly> LoadAssembliesFromBytes(List<byte[]> dllBytesList)
+    private static List<Assembly> LoadAssembliesFromBytes(List<byte[]> dllBytesList , string name)
     {
         var assemblies = new List<Assembly>();
 
         foreach (var dllBytes in dllBytesList)
         {
             var context = new PluginLoadContext();
-            var assembly = context.LoadFromBytes(dllBytes);
-            assemblies.Add(assembly);
-        }
 
+            try
+            {
+                var assembly = context.LoadFromBytes(dllBytes);
+
+                assemblies.Add(assembly);
+            }
+            catch (Exception ) 
+            {
+                Debug.WriteLine($"Failed to load an assembly from: {name}");
+            }
+        }
         return assemblies;
     }
 }
