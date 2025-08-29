@@ -32,7 +32,7 @@ namespace Broadcast.SubForms
                 if (manager.Locked )
                 {
                     if( manager is IPlugin plugin)
-                        Debug.WriteLine($"Plugin {plugin} is still locked.", plugin.ShortName);
+                        Debug.WriteLine($"Plugin {plugin.ShortName} is still locked.");
 
                     return;
                 }
