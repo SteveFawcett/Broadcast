@@ -2,10 +2,13 @@
   "RepositoryUrl": "https://raw.githubusercontent.com/SteveFawcett/delivery/refs/heads/main/releases.json",
   "loglevel": "Info",
   "MSFS": {
+    "SDK": "C:\\MSFS 2024 SDK\\SimConnect SDK\\",
     "server": "localhost",
-    "export": ["PLANE ALTITUDE",
-               "PLANE LATITUDE", 
-               "PLANE LONGITUDE" ]
+    "export": [
+      "PLANE ALTITUDE",
+      "PLANE LATITUDE",
+      "PLANE LONGITUDE"
+    ]
   },
   "Redis": {
     "server": "controller.local",

@@ -33,15 +33,16 @@ public partial class MainForm : Form
     // 🧩 Plugin UI Setup
     public void AttachPlugins()
     {
+        _logger.LogInformation("Attaching plugins to UI");
+
         foreach (IPlugin plugin in _registry.GetAll())
         {
+            _logger.LogInformation("Setting up plugin {Name}", plugin.Name);
+
             var container = CreatePluginIconContainer(plugin.ShortName, plugin.MainIcon);
             flowLayoutPanel1.Controls.Add(container);
-
-            _logger.LogInformation("Attaching plugin {Name}", plugin.Name);
             plugin.Click += PluginControl_Click;
             
-
             if (plugin is IProvider provider)
             {
                 _logger.LogDebug("Plugin {Name} implements {provider}", plugin.Name, nameof(IProvider));

@@ -55,29 +55,40 @@ internal static class Program
         var assemblies = tempStartup.LoadAssemblies();
 
         StartUp.AddText("Discover and register plugin types before building provider");
+
         foreach (var assembly in assemblies)
         {
             logger.LogDebug($"Scanning assembly: {assembly.FullName}");
+
+            logger.LogDebug($"Plugin interface type: {typeof(IPlugin).Assembly.FullName}");
+            
             try
             {
-                foreach (var pluginType in DiscoverPluginTypes(assembly))
+                var pluginTypes = assembly.GetTypes()
+                    .Where(t => typeof(IPlugin).IsAssignableFrom(t) && !t.IsAbstract && t.IsClass);
+
+                foreach (var type in pluginTypes)
                 {
+                    logger.LogDebug($"Type implements IPlugin: {typeof(IPlugin).IsAssignableFrom(type)}");
+
                     try
                     {
-                        StartUp.AddText($"Registering plugin: {pluginType.FullName}");
-                        services.AddTransient(typeof(IPlugin), pluginType);
+                        var pluginInstance = (IPlugin)Activator.CreateInstance(type)!;
+
+                        StartUp.AddText($"Registering plugin: {pluginInstance.Name}");
+                        services.AddTransient(typeof(IPlugin), type);
                     }
                     catch (Exception ex)
                     {
-                        logger.LogError(ex, $"Failed to register plugin type: {pluginType.FullName}");
+                        logger.LogError(ex, $"Failed to register plugin type: {type.FullName}");
                     }
                 }
             }
-            catch (ReflectionTypeLoadException rtle)
+            catch (ReflectionTypeLoadException ex)
             {
-                foreach (var loaderException in rtle.LoaderExceptions)
+                foreach (var loaderEx in ex.LoaderExceptions)
                 {
-                    logger.LogError(loaderException, $"Loader exception in assembly: {assembly.FullName}");
+                    logger.LogError(loaderEx, $"Type load error in assembly: {assembly.FullName}");
                 }
             }
             catch (Exception ex)
@@ -86,13 +97,19 @@ internal static class Program
             }
         }
 
+
         // Build provider after all services are registered
         var provider = services.BuildServiceProvider();
         var registry = provider.GetRequiredService<IPluginRegistry>();
 
         // Resolve plugin instances via DI
         var plugins = provider.GetServices<IPlugin>();
-        foreach (var plugin in plugins) registry.Add(plugin);
+        logger.LogInformation($"Total plugins discovered: {plugins.Count()}");
+
+        foreach (var plugin in plugins)
+        {
+            registry.Add(plugin);
+        }
 
         tempStartup.Hide();
         registry.AttachMasterReader();
@@ -102,13 +119,4 @@ internal static class Program
         Application.Run(mainForm);
     }
 
-    private static IEnumerable<Type> DiscoverPluginTypes(Assembly assembly)
-    {
-        var seenTypes = new HashSet<string>();
-
-        foreach (var type in assembly.GetTypes())
-            if (typeof(IPlugin).IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract)
-                if (type.FullName != null && seenTypes.Add(type.FullName))
-                    yield return type;
-    }
 }

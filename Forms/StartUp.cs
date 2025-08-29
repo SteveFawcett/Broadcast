@@ -72,11 +72,20 @@ public partial class StartUp : Form, IStartup
             AddText($"Found plugin zip at {zipPath}");
 
             var dllBytesList = ExtractDllsFromZip(zipPath);
-            var loadedAssemblies = LoadAssembliesFromBytes(dllBytesList);
-            SetupAssemblyResolver(loadedAssemblies);
+            try
+            {
+                var loadedAssemblies = LoadAssembliesFromBytes(dllBytesList , Path.GetFileName(zipPath));
+                SetupAssemblyResolver(loadedAssemblies);
 
-            assemblies.AddRange(loadedAssemblies);
-            AddText($"Loaded {loadedAssemblies.Count} assemblies from {Path.GetFileName(zipPath)}");
+                assemblies.AddRange(loadedAssemblies);
+                AddText($"Loaded {loadedAssemblies.Count} assemblies from {Path.GetFileName(zipPath)}");
+            }
+            catch (Exception ex)
+            {
+                AddText($"Failed to load assemblies from {Path.GetFileName(zipPath)}");
+                _logger.LogError(ex, $"Failed to load assemblies from {Path.GetFileName(zipPath)}");
+            }
+
         }
 
         return assemblies;
@@ -126,18 +135,25 @@ public partial class StartUp : Form, IStartup
         return dllBytesList;
     }
 
-    private static List<Assembly> LoadAssembliesFromBytes(List<byte[]> dllBytesList)
+    private static List<Assembly> LoadAssembliesFromBytes(List<byte[]> dllBytesList , string name)
     {
         var assemblies = new List<Assembly>();
 
         foreach (var dllBytes in dllBytesList)
         {
             var context = new PluginLoadContext();
-            var assembly = context.LoadFromBytes(dllBytes);
 
-            assemblies.Add(assembly);
+            try
+            {
+                var assembly = context.LoadFromBytes(dllBytes);
+
+                assemblies.Add(assembly);
+            }
+            catch (Exception ) 
+            {
+                Debug.WriteLine($"Failed to load an assembly from: {name}");
+            }
         }
-
         return assemblies;
     }
 }
