@@ -1,10 +1,12 @@
-using System.Reflection;
-using Broadcast.SubForms;
 using Broadcast.Classes;
+using Broadcast.SubForms;
 using BroadcastPluginSDK.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.EventLog;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace Broadcast;
 
@@ -28,15 +30,28 @@ internal static class Program
             ? parsedLevel
             : LogLevel.Information;
 
+        var log = "Application";
+        var source = "Broadcast";
+
+        if (!EventLog.SourceExists(source))
+        {
+            EventLog.CreateEventSource(source, log );
+        }
+
         var loggerFactory = LoggerFactory.Create(builder =>
         {
             builder.AddConsole();
+            builder.AddEventLog(settings =>
+            {
+                settings.LogName = log;      // Or a custom log name
+                settings.SourceName = source;    // Must be registered in Event Viewer
+            });
             builder.SetMinimumLevel( loglevel);
             builder.AddDebug();
         });
 
         var logger = loggerFactory.CreateLogger("MSFS");
-        logger.LogInformation("Application starting...");
+        logger.LogInformation($"{source} {log} starting...");
 
 
         // Setup DI container

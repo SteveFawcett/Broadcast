@@ -22,6 +22,16 @@
 
   </PropertyGroup>
 
+   <ItemGroup>
+		<MyPublishItems Include="$(OutputPath)\broadcast.exe" />
+	    <MyPublishItems Include="$(OutputPath)\broadcast.pdb" />
+	</ItemGroup>
+
+  <Target Name="AutoPackage" AfterTargets="Build">
+	    <Copy SourceFiles="@(MyPublishItems)" DestinationFolder="$(OutputPath)\publish\" />
+		<Message Text="Resolved PublishItemsOutputGroup: @(PublishItemsOutputGroup)" Importance="High" />
+	</Target>
+	
   <ItemGroup>
     <Compile Remove="Plugins\**" />
     <EmbeddedResource Remove="Plugins\**" />
@@ -44,7 +54,7 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(Configuration)' == 'Release'">
-		<PackageReference Include="BroadcastPluginSDK" Version="1.1.1" />
+		<PackageReference Include="BroadcastPluginSDK" Version="1.1.2" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -60,6 +70,8 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.8" />
  
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.8" />
+ 
+    <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="9.0.8" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
