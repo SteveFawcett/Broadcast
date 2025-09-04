@@ -43,7 +43,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Resources\airplane.ico" />
+    <Content Include="Resources\airplane.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="settings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

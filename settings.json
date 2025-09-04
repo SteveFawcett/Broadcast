@@ -22,6 +22,11 @@
     "port": 8080,
     "server": "0.0.0.0"
   },
+  "Network": {
+    "NetworkSubnet": "196.168.1",
+    "NetworkUpdate": 1000,
+    "NetworkRefresh": 60000
+  },
   "Test": {
     "TestData": [
       { "variable": "PLANE ALTITUDE" },
