@@ -25,7 +25,8 @@
   "Network": {
     "NetworkSubnet": "196.168.1",
     "NetworkUpdate": 1000,
-    "NetworkRefresh": 60000
+    "NetworkRefresh": 60000,
+    "ShowNetwork": true
   },
   "Test": {
     "TestData": [

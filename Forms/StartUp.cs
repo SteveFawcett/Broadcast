@@ -78,7 +78,6 @@ public partial class StartUp : Form, IStartup
                 SetupAssemblyResolver(loadedAssemblies);
 
                 assemblies.AddRange(loadedAssemblies);
-                _logger.LogInformation($"Loaded {loadedAssemblies.Count} assemblies from {Path.GetFileName(zipPath)}");
                 AddText($"Loaded {loadedAssemblies.Count} assemblies from {Path.GetFileName(zipPath)}");
             }
             catch (Exception ex)
