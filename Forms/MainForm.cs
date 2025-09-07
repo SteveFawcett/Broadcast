@@ -2,6 +2,7 @@
 using BroadcastPluginSDK.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Windows.Forms;
 
 namespace Broadcast.SubForms;
 
@@ -122,6 +123,12 @@ public partial class MainForm : Form
         MouseEventArgs me = e ?? new MouseEventArgs(MouseButtons.Left, 1, 0, 0, 0);
 
         Logger.LogDebug("PluginControl_Click type: {type} arguments: {arguments} Button: {button}", sender?.GetType().Name, me.GetType().Name , me.Button);
+
+        if( panel.InvokeRequired )
+        {
+            panel.BeginInvoke(new Action(() => PluginControl_Click(sender, e)));
+            return;
+        }
 
         if (me.Button == MouseButtons.Left)
         {
