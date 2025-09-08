@@ -161,7 +161,7 @@ public partial class MainForm : Form
         foreach (var plugin in _registry.Caches() ?? [])
         {
             if (plugin is ICache cache)
-                cache.Write(e);
+                cache.CacheWriter(e);
         }
     }
 
