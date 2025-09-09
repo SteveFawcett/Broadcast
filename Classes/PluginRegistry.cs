@@ -57,14 +57,14 @@ public class PluginRegistry : IPluginRegistry
         
         if (c != null)
         {
-            _logger.LogInformation($"Master cache found: {c.Name}");
+            _logger.LogDebug($"Master cache found: {c.Name}");
             return c;
         }
        
         c = Caches()?.FirstOrDefault();
         if (c != null)
         {
-            _logger.LogWarning($"No master cache found. Choosing first cache {c.Name}");
+            _logger.LogDebug($"No master cache found. Choosing first cache {c.Name}");
             return c;
         }
 
