@@ -118,7 +118,7 @@ public partial class MainForm : Form
     }
 
     // 🧠 Plugin Event Handlers
-    public void PluginControl_Click(object? sender, MouseEventArgs e)
+    public void PluginControl_Click(object? sender, MouseEventArgs? e)
     { 
         MouseEventArgs me = e ?? new MouseEventArgs(MouseButtons.Left, 1, 0, 0, 0);
 
@@ -134,9 +134,16 @@ public partial class MainForm : Form
         {
             if (sender is IPlugin plugin)
             {
-                panel.Controls.Clear();
-                var page = plugin.InfoPage.GetControl();
-                panel.Controls.Add(page);
+                try
+                {
+                    panel.Controls.Clear();
+                    var page = plugin.InfoPage.GetControl();
+                    panel.Controls.Add(page);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error loading info page for plugin {Name}", plugin.Name);
+                }
             }
         }
         else if (me.Button == MouseButtons.Right)
