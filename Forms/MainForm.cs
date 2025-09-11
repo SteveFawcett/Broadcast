@@ -43,6 +43,7 @@ public partial class MainForm : Form
             var container = CreatePluginIconContainer(plugin.ShortName, plugin.MainIcon);
             flowLayoutPanel1.Controls.Add(container);
             plugin.Click += PluginControl_Click;
+            plugin.ImageChanged += PluginControl_ImageChanged;
             
             if (plugin is IProvider provider)
             {
@@ -56,6 +57,22 @@ public partial class MainForm : Form
                 manager.TriggerRestart += PluginControl_Restart;
                 manager.ShowScreen += Plugin_ShowScreen;
                 manager.WriteConfiguration += Plugin_WriteConfiguration;
+            }
+        }
+    }
+
+    private void PluginControl_ImageChanged(object? sender, Image e)
+    {
+        if(sender is IPlugin plugin)
+        {
+            _logger.LogInformation("Plugin {plugin} requested to change icon", sender?.GetType().Name);
+            foreach (Control ctrl in flowLayoutPanel1.Controls)
+            {
+                if (ctrl.Controls.Contains(plugin.MainIcon))
+                {
+                    plugin.MainIcon.Icon = e;
+                    break;
+                }
             }
         }
     }
