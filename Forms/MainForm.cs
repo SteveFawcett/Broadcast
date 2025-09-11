@@ -65,7 +65,7 @@ public partial class MainForm : Form
     {
         if(sender is IPlugin plugin)
         {
-            _logger.LogInformation("Plugin {plugin} requested to change icon", sender?.GetType().Name);
+            _logger.LogDebug("Plugin {plugin} requested to change icon", sender?.GetType().Name);
             foreach (Control ctrl in flowLayoutPanel1.Controls)
             {
                 if (ctrl.Controls.Contains(plugin.MainIcon))
