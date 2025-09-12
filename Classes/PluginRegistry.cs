@@ -68,7 +68,6 @@ public class PluginRegistry : IPluginRegistry
             return c;
         }
 
-        _logger.LogError("No caches found.");
         return null;
     }
 
