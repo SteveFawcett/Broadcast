@@ -50,20 +50,20 @@ internal static class Program
             builder.AddDebug();
         });
 
-        var logger = loggerFactory.CreateLogger("MSFS");
-        logger.LogInformation($"{source} {log} starting...");
-
 
         // Setup DI container
         var services = new ServiceCollection();
         services.AddSingleton(configuration);
         services.AddSingleton<ILocalConfigurationManager, LocalConfigurationManager>() ;
         services.AddSingleton<ILoggerFactory>(loggerFactory);
-        services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
+        services.AddSingleton(typeof(ILogger<>), typeof(ContextualLogger<>));
         services.AddSingleton<IPluginRegistry, PluginRegistry>();
         services.AddTransient<MainForm>();
 
         // Temporary startup instance to load assemblies before building provider
+        var tempProvider = services.BuildServiceProvider();
+        var logger = new ContextualLogger(tempProvider.GetRequiredService<ILoggerFactory>().CreateLogger("BROADCAST"));
+
         var tempStartup = new StartUp(configuration, logger);
         tempStartup.ShowDialog();
 
