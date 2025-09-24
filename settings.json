@@ -5,13 +5,13 @@
     "SDK": "C:\\MSFS 2024 SDK\\SimConnect SDK\\",
     "server": "localhost",
     "export": [
-      "PLANE ALTITUDE",
-      "PLANE LATITUDE",
-      "PLANE LONGITUDE"
+      { "variable": "PLANE ALTITUDE" },
+      { "variable": "PLANE LATITUDE" },
+      { "variable": "PLANE LONGITUDE" }
     ]
   },
   "Redis": {
-    "server": "controller.local",
+    "server": "cache.local",
     "port": 6379,
     "sample": 9999
   },
