@@ -38,6 +38,7 @@
       { "variable": "PLANE ALTITUDE" },
       { "variable": "PLANE LATITUDE" },
       { "variable": "PLANE LONGITUDE" }
-    ]
+    ],
+    "Command": [ "Test Success", "Test Failure" ]
   }
 }
