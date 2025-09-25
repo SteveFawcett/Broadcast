@@ -28,6 +28,11 @@
     "NetworkRefresh": 60000,
     "ShowNetwork": true
   },
+  "Command": {
+    "jobs": [
+      {"Name": "Start MSFS", "Command": "start shell:AppsFolder\\Microsoft.Limitless_8wekyb3d8bbwe!App -FastLaunch" }
+    ]
+  },
   "Test": {
     "TestData": [
       { "variable": "PLANE ALTITUDE" },

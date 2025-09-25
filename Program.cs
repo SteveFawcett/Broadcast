@@ -1,6 +1,7 @@
 using Broadcast.Classes;
 using Broadcast.SubForms;
 using BroadcastPluginSDK.Interfaces;
+using CyberDog.Controls;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -69,13 +70,13 @@ internal static class Program
 
         var assemblies = tempStartup.LoadAssemblies();
 
-        StartUp.AddText("Discover and register plugin types before building provider");
+        StartUp.LogPanel.LogInformation("Discover and register plugin types before building provider");
 
         foreach (var assembly in assemblies)
         {
-            logger.LogDebug($"Scanning assembly: {assembly.FullName}");
+            StartUp.LogPanel.LogDebug($"Scanning assembly: {assembly.FullName}");
 
-            logger.LogDebug($"Plugin interface type: {typeof(IPlugin).Assembly.FullName}");
+            StartUp.LogPanel.LogDebug($"Plugin interface type: {typeof(IPlugin).Assembly.FullName}");
             
             try
             {
@@ -84,18 +85,18 @@ internal static class Program
 
                 foreach (var type in pluginTypes)
                 {
-                    logger.LogDebug($"Type implements IPlugin: {typeof(IPlugin).IsAssignableFrom(type)}");
+                    StartUp.LogPanel.LogDebug($"Type implements IPlugin: {typeof(IPlugin).IsAssignableFrom(type)}");
 
                     try
                     {
                         var pluginInstance = (IPlugin)Activator.CreateInstance(type)!;
 
-                        StartUp.AddText($"Registering plugin: {pluginInstance.Name}");
+                        StartUp.LogPanel.LogInformation($"Registering plugin: {pluginInstance.Name}");
                         services.AddTransient(typeof(IPlugin), type);
                     }
                     catch (Exception ex)
                     {
-                        logger.LogError(ex, $"Failed to register plugin type: {type.FullName}");
+                        StartUp.LogPanel.LogError( $"Failed to register plugin type: {type.FullName} Message: {ex.Message}");
                     }
                 }
             }
@@ -103,12 +104,12 @@ internal static class Program
             {
                 foreach (var loaderEx in ex.LoaderExceptions)
                 {
-                    logger.LogError(loaderEx, $"Type load error in assembly: {assembly.FullName}");
+                    StartUp.LogPanel.LogError( $"Type load error in assembly: {assembly.FullName} , message: {loaderEx!.Message}");
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Failed to scan assembly: {assembly.FullName}");
+                StartUp.LogPanel.LogError($"Failed to scan assembly: {assembly.FullName} , message: {ex.Message}");
             }
         }
 
@@ -119,7 +120,7 @@ internal static class Program
 
         // Resolve plugin instances via DI
         var plugins = provider.GetServices<IPlugin>();
-        logger.LogInformation($"Total plugins discovered: {plugins.Count()}");
+        StartUp.LogPanel.LogInformation($"Total plugins discovered: {plugins.Count()}");
 
         foreach (var plugin in plugins)
         {

@@ -10,11 +10,14 @@ namespace Broadcast.Classes
 
         public ContextualLogger(ILoggerFactory factory)
         {
-            var baseLogger = factory.CreateLogger(typeof(T).FullName);
+            var baseLogger = factory.CreateLogger(typeof(T).FullName!);
             _inner = new ContextualLogger(baseLogger);
         }
+        public IDisposable BeginScope<TState>(TState state)
+        {
+            return _inner.BeginScope(state) ;
+        }
 
-        public IDisposable BeginScope<TState>(TState state) => _inner.BeginScope(state);
         public bool IsEnabled(LogLevel logLevel) => _inner.IsEnabled(logLevel);
 
         public void Log<TState>(LogLevel logLevel, EventId eventId,
@@ -61,7 +64,7 @@ namespace Broadcast.Classes
                 if (type == typeof(ContextualLogger) || type.Name.StartsWith("Logger") || type.Name.Contains("ContextualLogger"))
                     continue;
 
-                return $"{type.Name}.{method.Name}";
+                return $"{type.Name}.{method!.Name}";
             }
 
             return "UnknownCaller";

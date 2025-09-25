@@ -1,5 +1,6 @@
 ﻿
 using BroadcastPluginSDK.Interfaces;
+using CyberDog.Controls;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
@@ -53,11 +54,6 @@ public partial class StartUp : Form, IStartup
             _configuration["PluginInstallPath"] = installPath;
         }
     }
-    public static void AddText(string message)
-    {
-        textBox.AppendLine(message);
-        Debug.WriteLine(message);
-    }
 
     public IEnumerable<Assembly> LoadAssemblies()
     {
@@ -65,11 +61,11 @@ public partial class StartUp : Form, IStartup
 
         string directory = _configuration["PluginInstallPath"] ?? string.Empty;
 
-        AddText($"Using plugin directory: {directory}");
+        LogPanel.LogDebug($"Using plugin directory: {directory}");
 
         foreach (var zipPath in Directory.GetFiles(directory, "*.zip"))
         {
-            AddText($"Found plugin zip at {zipPath}");
+            LogPanel.LogDebug($"Found plugin zip at {zipPath}");
 
             var dllBytesList = ExtractDllsFromZip(zipPath);
             try
@@ -78,12 +74,11 @@ public partial class StartUp : Form, IStartup
                 SetupAssemblyResolver(loadedAssemblies);
 
                 assemblies.AddRange(loadedAssemblies);
-                AddText($"Loaded {loadedAssemblies.Count} assemblies from {Path.GetFileName(zipPath)}");
+                LogPanel.LogInformation($"Loaded {loadedAssemblies.Count} assemblies from {Path.GetFileName(zipPath)}");
             }
             catch (Exception ex)
             {
-                AddText($"Failed to load assemblies from {Path.GetFileName(zipPath)}");
-                _logger.LogError(ex, $"Failed to load assemblies from {Path.GetFileName(zipPath)}");
+                LogPanel.LogError($"Failed to load assemblies from {Path.GetFileName(zipPath)}, Message {ex.Message}");
             }
 
         }
@@ -98,9 +93,8 @@ public partial class StartUp : Form, IStartup
         Show();
         Refresh();
 
-        textBox.Clear();
-        AddText(Strings.start);
-        AddText(text);
+        LogPanel.LogInformation(Strings.start);
+        LogPanel.LogDebug(text);
     }
 
     private static void SetupAssemblyResolver(List<Assembly> loadedAssemblies)
@@ -151,7 +145,7 @@ public partial class StartUp : Form, IStartup
             }
             catch (Exception ) 
             {
-                Debug.WriteLine($"Failed to load an assembly from: {name}");
+                LogPanel.LogError($"Failed to load an assembly from: {name}");
             }
         }
         return assemblies;
