@@ -180,12 +180,12 @@ public partial class MainForm : Form
         }
     }
 
-    internal void PluginControl_DataReceived(object? sender, Dictionary<string, string> e)
+    internal void PluginControl_DataReceived(object? sender, CacheData payload )
     {
         foreach (var plugin in _registry.Caches() ?? [])
         {
             if (plugin is ICache cache)
-                cache.CacheWriter(e);
+                cache.CacheWriter( payload );
         }
     }
 
