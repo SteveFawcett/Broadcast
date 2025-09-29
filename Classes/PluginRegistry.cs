@@ -85,5 +85,12 @@ public class PluginRegistry : IPluginRegistry
                 yield return c;
     }
 
+    public IEnumerable<ICommandHandler> CommandHandlers()
+    {
+        foreach (var plugin in _plugins)
+            if (plugin is ICommandHandler c)
+                yield return c;
+    }
+
     public record PluginInfo(string Name, string Version, string FilePath, string Description, string RepositoryUrl);
 }

@@ -50,6 +50,7 @@ public partial class MainForm : Form
             {
                 _logger.LogDebug("Plugin {Name} implements {provider}", plugin.Name, nameof(IProvider));
                 provider.DataReceived += PluginControl_DataReceived;
+                provider.CommandReceived += Plugin_WriteToCommandHandlers;
             }
 
             if (plugin is IManager manager)
@@ -59,21 +60,16 @@ public partial class MainForm : Form
                 manager.ShowScreen += Plugin_ShowScreen;
                 manager.WriteConfiguration += Plugin_WriteConfiguration;
             }
-
-            if( plugin is ICache cache)
-            {
-                _logger.LogDebug("Plugin {Name} implements {Interface}", plugin.Name, nameof(ICache));
-                cache.CommandSent += Plugin_WriteToCommandHandlers;
-            }
         }
     }
 
     private void Plugin_WriteToCommandHandlers(object? sender, CommandItem e)
     {
-        foreach (IPlugin plugin in _registry.GetAll())
+        foreach (IPlugin plugin in _registry.CommandHandlers())
         {
             if (plugin is ICommandHandler handler)
             {
+                _logger.LogInformation("Plugin {plugin} sending command to handler {handler}", sender?.GetType().Name, plugin.ShortName);
                 handler.CommandHandler(e);
             }
         }
