@@ -128,7 +128,6 @@ internal static class Program
         }
 
         tempStartup.Hide();
-        registry.AttachMasterReader();
 
         var mainForm = provider.GetRequiredService<MainForm>();
         Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);

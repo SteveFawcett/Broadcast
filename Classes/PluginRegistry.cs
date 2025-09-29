@@ -85,18 +85,5 @@ public class PluginRegistry : IPluginRegistry
                 yield return c;
     }
 
-    public void AttachMasterReader()
-    {
-        var master = MasterCache();
-
-        if (master is null) return;
-
-        if (master is BroadcastCacheBase c)
-            foreach (var plugin in GetAll())
-            {
-                _logger.LogDebug($"Attaching cache reader to plugin: {plugin.Name}");
-                plugin.GetCacheData = c.CacheReader;
-            }
-    }
     public record PluginInfo(string Name, string Version, string FilePath, string Description, string RepositoryUrl);
 }

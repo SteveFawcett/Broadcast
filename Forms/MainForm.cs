@@ -1,4 +1,5 @@
 ﻿using Broadcast.Classes;
+using BroadcastPluginSDK.Classes;
 using BroadcastPluginSDK.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -57,6 +58,23 @@ public partial class MainForm : Form
                 manager.TriggerRestart += PluginControl_Restart;
                 manager.ShowScreen += Plugin_ShowScreen;
                 manager.WriteConfiguration += Plugin_WriteConfiguration;
+            }
+
+            if( plugin is ICache cache)
+            {
+                _logger.LogDebug("Plugin {Name} implements {Interface}", plugin.Name, nameof(ICache));
+                cache.CommandSent += Plugin_WriteToCommandHandlers;
+            }
+        }
+    }
+
+    private void Plugin_WriteToCommandHandlers(object? sender, CommandItem e)
+    {
+        foreach (IPlugin plugin in _registry.GetAll())
+        {
+            if (plugin is ICommandHandler handler)
+            {
+                handler.CommandHandler(e);
             }
         }
     }
